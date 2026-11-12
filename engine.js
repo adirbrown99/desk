@@ -350,6 +350,15 @@ const Engine = (() => {
     return out;
   }
 
+  // The lead source as the agent names it (commission.lead_of): 50% or more is his own, anything shared is the partner's.
+  function leadOf(source, rules) {
+    const s = (source || "").trim(), shares = rules.share_by_source;
+    let share = Object.prototype.hasOwnProperty.call(shares, s) ? shares[s] : undefined;
+    if (share === undefined) { const k = Object.keys(shares).find(k => s.toLowerCase().includes(k.toLowerCase())); share = k === undefined ? undefined : shares[k]; }
+    if (share === undefined || share === null) return "לא ידוע";
+    return Number(share) >= 0.5 ? (rules.personal_source || "אדיר") : (rules.lead_partner || "יונתן");
+  }
+
   const STALE = () => ({ kind: "undefined", label: "לא מעודכן", share: null, scope: null, trailing: null, estimated: false,
     missing: "השורה השתנתה והפענוח נכשל", critical: true, production: {} });
 
@@ -454,21 +463,21 @@ const Engine = (() => {
       const read = parse(rec.text, rec.month);
       const deals = read.confident && !(old && old.ans) ? read.deals
         : read.deals.map(d => Object.assign({}, d, { sure: false, unsure: d.unsure || WAITING }));
-      const isTest = tests.has(rec.name);
+      const isTest = tests.has(rec.name), lead = leadOf(rec.source, state.rules);
       deals.forEach((d, i) => {
         let month = d.month || rec.month;
         if (!month || !month.includes("/")) month = rec.month;
         const row = { id: id + "-l" + i, clientId: id, client: rec.name, person: d.person, action: d.action || "אחר", product: d.product,
           company: d.company, fromCompany: d.from_company, premium: d.premium, amount: d.amount, deposit: d.deposit, salary: d.salary,
           month, source: rec.source, cancels: d.cancels, lien: d.lien, note: d.note, sure: d.sure !== false, unsure: d.unsure,
-          stale: false, test: isTest };
+          stale: false, test: isTest, lead, order: rec.row };
         const res = compute(row, state.rules);
         row.commission = Object.fromEntries(COMMISSION.map(k => [k, res[k] === undefined ? null : res[k]]));
         rows.push(row);
       });
       const before = clients.findIndex(c => c.id === id);
       const client = Object.assign(before >= 0 ? clients[before] : { hasFolder: false, folderRel: null, pdfCount: 0, tzConflict: false, sheetPending: false },
-        { id, name: rec.name, month: rec.month, source: rec.source, followup: rec.followup || null, deals: deals.length, stale: false, test: isTest, audit: [] });
+        { id, name: rec.name, month: rec.month, source: rec.source, lead, order: rec.row, followup: rec.followup || null, deals: deals.length, stale: false, test: isTest, audit: [] });
       if (before < 0) clients.push(client);
     }
     const figures = months(rows, clients, state.rules, today);
@@ -483,6 +492,6 @@ const Engine = (() => {
     return strip2(mine.months) === strip2(state.months) && JSON.stringify(mine.insights) === JSON.stringify(state.insights);
   }
 
-  return { parse, compute, months, applyLive, agrees, fnv, Dec };
+  return { parse, compute, months, applyLive, agrees, fnv, leadOf, Dec };
 })();
 if (typeof module !== "undefined") module.exports = Engine;
