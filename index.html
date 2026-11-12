@@ -23,12 +23,13 @@ html, body { margin: 0; }
 body {
   font-family: -apple-system, "SF Pro Text", "Heebo", system-ui, sans-serif; color: var(--ink);
   background: var(--cream); min-height: 100dvh; overflow-x: hidden;
-  padding: calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 96px);
+  padding: calc(env(safe-area-inset-top) + 22px) 16px calc(env(safe-area-inset-bottom) + 96px);
 }
 body::before {
   content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background: radial-gradient(60% 40% at 100% 0%, var(--mint), transparent 70%),
-              radial-gradient(55% 38% at 0% 12%, var(--peach), transparent 70%),
+  background: linear-gradient(var(--cream), var(--cream)) top / 100% calc(env(safe-area-inset-top) + 8px) no-repeat,
+              radial-gradient(60% 40% at 100% 18%, var(--mint), transparent 70%),
+              radial-gradient(55% 38% at 0% 26%, var(--peach), transparent 70%),
               radial-gradient(60% 40% at 40% 100%, rgba(250,219,140,.5), transparent 70%);
 }
 .num { font-family: ui-rounded, -apple-system, system-ui; font-variant-numeric: tabular-nums; }
@@ -78,6 +79,10 @@ h2 small { color: var(--muted); font-weight: 500; font-size: 14px; }
 .back { border: 0; background: none; color: var(--emerald); font: inherit; font-weight: 700; padding: 0 0 10px; }
 .tap { cursor: pointer; }
 .comm2 { font-size: 13px; color: #9a7420; font-weight: 700; }
+.sc { color: #a87a14; font-weight: 800; } .tr { color: var(--emerald); font-weight: 800; }
+.pair { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 15px; }
+.key { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); margin: -4px 0 10px; }
+.key i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-left: 5px; vertical-align: -1px; }
 .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .name { font-weight: 700; font-size: 16px; color: var(--deep); }
 .deal { display: flex; align-items: center; gap: 7px; font-size: 14.5px; padding: 3px 0; }
@@ -161,7 +166,7 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
-const PAGE = "2c8e14";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "6c1925";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -391,6 +396,7 @@ function deals() {
 }
 let commView = "summary";   // summary · clients (the month's clients with scope and trailing) · month (the month's commissions)
 const cmoney = v => money(v) || "0 ₪";
+const KEY_LINE = `<div class="key"><span><i style="background:#a87a14"></i>היקף</span><span><i style="background:var(--emerald)"></i>נפרעים</span></div>`;
 function comm() {
   const m = state.months.find(x => x.month === month), c = m.commission, p = c.production;
   const back = `<button class="back" data-comm="summary">→ חזרה לסיכום</button>`;
@@ -399,22 +405,23 @@ function comm() {
       const rows = state.rows.filter(r => r.clientId === x.id);
       return { x, scope: rows.reduce((t, r) => t + (r.commission.scope || 0), 0), trailing: rows.reduce((t, r) => t + (r.commission.trailing || 0), 0) };
     });
-    return back + `<h2>לקוחות ${monthName(month)} <small>היקף · נפרעים</small></h2>` + list.map(({ x, scope, trailing }) =>
-      `<button class="card client" data-cclient="${esc(x.id)}"><div class="row"><span class="name">${esc(x.name)}</span><span class="small">${esc(lead(x))}</span></div>
-        <div class="row" style="margin-top:6px"><span class="comm2 num">היקף ${cmoney(scope)}</span><span class="comm2 num">נפרעים ${cmoney(trailing)}</span></div></button>`).join("");
+    return back + `<h2>לקוחות ${monthName(month)}</h2>${KEY_LINE}` + list.map(({ x, scope, trailing }) =>
+      `<button class="card client" data-cclient="${esc(x.id)}"><div class="row"><div><div class="name">${esc(x.name)}</div><div class="small">${esc(lead(x))}</div></div>
+        <div class="pair num"><span class="sc">${cmoney(scope)}</span><span class="tr">${cmoney(trailing)}</span></div></div></button>`).join("");
   }
   if (commView === "month") {
     const order = clientOrder();
     const list = newest(state.rows.filter(r => r.month === month), r => order[r.clientId] || r.order || 0);
     return back + `<h2>עמלות ${monthName(month)}</h2>
-      <div class="card"><div class="row"><span>היקף</span><b class="num">${cmoney(c.scope)}</b></div><div class="row"><span>נפרעים חדשים</span><b class="num">${cmoney(c.trailingNew)}</b></div>
-      <div class="row"><span>נפרעים לחודש</span><b class="num">${cmoney(c.trailingMonthly)}</b></div></div>` + list.map(r => `<button class="card dealrow" data-cdeal="${esc(r.id)}">
+      <div class="card"><div class="row"><span>היקף</span><b class="num sc">${cmoney(c.scope)}</b></div><div class="row"><span>נפרעים חדשים</span><b class="num tr">${cmoney(c.trailingNew)}</b></div>
+      <div class="row"><span>נפרעים לחודש</span><b class="num tr">${cmoney(c.trailingMonthly)}</b></div></div>${KEY_LINE}` + list.map(r => `<button class="card dealrow" data-cdeal="${esc(r.id)}">
         <span class="${cls(r.action)}" style="font-weight:700">${esc(r.commission.label)}</span><span class="who">${esc(r.client)}</span>
-        <span class="comm2 num">${r.commission.missing ? (r.commission.critical ? "בירור" : "אין עמלה") : cmoney(r.commission.scope) + " · " + cmoney(r.commission.trailing)}</span></button>`).join("");
+        ${r.commission.missing ? `<span class="comm2">${r.commission.critical ? "בירור" : "אין עמלה"}</span>`
+          : `<span class="pair num"><span class="sc">${cmoney(r.commission.scope)}</span><span class="tr">${cmoney(r.commission.trailing)}</span></span>`}</button>`).join("");
   }
   const tile = (t, v, s) => `<div class="card"><div class="label">${t}</div><div class="mid num">${v}</div><div class="small">${s}</div></div>`;
   return `<div class="tap" data-comm="clients">${nifraim(c)}</div>
-    <div class="card tap" data-comm="clients"><div class="label">הבונוס החודשי שלי על היקף</div><div class="big gold num">${money(c.scope)}</div>
+    <div class="card tap" data-comm="clients"><div class="label">הבונוס החודשי שלי על היקף</div><div class="big num sc">${money(c.scope)}</div>
       <div class="small">מחושב לפי מה שנמכר, לא אומת מול הפקה${c.estimated ? ` · ${c.estimated} מוערכות לפי שכר` : ""}${c.questions ? ` · ${c.questions} בירורים` : ""} · לחיצה לפירוט לפי לקוח</div></div>
     <div class="card"><div class="label">פרמיה חדשה לפי חודש · לחיצה על חודש לעמלות שלו</div>
       <div class="chart">${state.months.map(x => `<div class="tap ${x.month === month ? "on" : ""}" data-cmonth="${x.month}"><em class="num">${Math.round(x.premium).toLocaleString("he-IL")}</em>
@@ -451,8 +458,7 @@ function clientSheet(id, withComm) {
       ${premium ? `<span class="tag num" style="color:var(--emerald)">פרמיה ${money(premium)}</span>` : ""}
       ${withComm ? `<span class="tag num" style="color:#9a7420">היקף ${cmoney(scope)}</span><span class="tag num" style="color:#9a7420">נפרעים ${cmoney(trailing)}</span>` : ""}
       ${c.sheetPending ? '<span class="tag p">לא בגיליון</span>' : ""}<span class="tag">${c.hasFolder ? c.pdfCount + " מסמכים" : "אין תיקייה"}</span></div>
-    ${c.folderRel ? `<a class="folder" href="${esc(filesLink(c.folderRel))}">📁 פתיחת התיקייה בקבצים</a>
-      <div class="small" style="margin:-4px 0 10px">iCloud Drive › שולחן העבודה › ${esc(c.folderRel.split("/").map(x => x.trim()).join(" › "))}</div>` : ""}
+    ${c.folderRel ? `<a class="folder" href="${esc(filesLink(c.folderRel))}">📁 פתיחת התיקייה בקבצים</a>` : ""}
     ${rows.map(r => `<div class="box ${cls(r.action)}"><div class="row"><span><b style="color:var(--deep)">${esc(r.product || "מוצר לא כתוב")}</b>
         <span class="${cls(r.action)}" style="font-weight:600"> ${esc(r.action)}</span></span><span class="amt num">${esc(amount(r))}</span></div>
       <div class="small" style="font-size:13.5px">${esc([company(r), r.person].filter(Boolean).join(" · "))}</div>
