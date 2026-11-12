@@ -157,6 +157,7 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
+const PAGE = "5bd073";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -457,7 +458,7 @@ function render() {
   $("month").innerHTML = state.months.slice().reverse().map(m => `<option value="${m.month}" ${m.month === month ? "selected" : ""}>${monthName(m.month)}</option>`).join("");
   $("view").innerHTML = { home, clients, deals, comm, report }[tab]();
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
-  $("stamp").textContent = "Mac: " + state.generatedAt.replace("T", " ").slice(5, 16) + (liveNote ? " · " + liveNote : "");
+  $("stamp").textContent = "Mac: " + state.generatedAt.replace("T", " ").slice(5, 16) + (liveNote ? " · " + liveNote : "") + " · v" + PAGE;
 }
 
 $("month").addEventListener("change", e => { month = e.target.value; render(); });
