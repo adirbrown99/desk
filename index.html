@@ -239,7 +239,7 @@ async function load(pass, useFace) {
     if (pass) keys = await deriveKeys(pass, env);
     else if (useFace && face) {
       try { keys = await keysFromFace(face); }
-      catch (e) { showLogin(e.name === "NotAllowedError" ? "" : "Face ID לא זמין. אפשר להיכנס בסיסמה."); return; }
+      catch (e) { showLogin(e.name === "NotAllowedError" || useFace === "auto" ? "" : "Face ID לא זמין. אפשר להיכנס בסיסמה."); return; }
     }
     else if (faceKeys && faceKeys.salt === env.salt) keys = faceKeys;   // back from the background: same session, no new prompt
     else if (saved && saved.salt === env.salt) keys = { enc: unhex(saved.enc), mac: unhex(saved.mac), salt: saved.salt };
@@ -247,8 +247,8 @@ async function load(pass, useFace) {
     state = await open(env, keys);
   } catch (e) {
     localStorage.removeItem(KEY);
-    if (useFace) localStorage.removeItem(FKEY);   // the passphrase changed since Face ID was set: it is set again after the next login
-    showLogin(pass ? "סיסמה שגויה" : useFace ? "הסיסמה הוחלפה. צריך להיכנס שוב בסיסמה." : "");
+    if (useFace === true) localStorage.removeItem(FKEY);   // the passphrase changed since Face ID was set: it is set again after the next login
+    showLogin(pass ? "סיסמה שגויה" : useFace === true ? "הסיסמה הוחלפה. צריך להיכנס שוב בסיסמה." : "");
     return;
   }
   faceKeys = keys;
@@ -353,7 +353,7 @@ function home() {
       <div class="card"><div class="mid num">${m.transfers}</div><div class="small">ניודים</div></div>
     </div>
     ${breakdown("פרמיה לפי מוצר", premiumBy(rows, r => ["בריאות", "מחלות קשות", "בריאות + מחלות"].includes(r.product) ? "בריאות" : r.product))}
-    ${breakdown("פרמיה לפי חברה", premiumBy(rows, r => r.company))}
+    ${breakdown("פרמיה לפי חברה", premiumBy(rows.filter(r => r.company), r => r.company))}
     ${breakdown("לפי מקור ליד", fold(bySource, notes))}
     ${unsure + pending + stale ? `<div class="chips" style="margin:0 0 10px;padding:0"><span class="small" style="align-self:center">לטיפול</span>
       ${unsure ? `<span class="tag w">${unsure} עסקאות לא ודאיות</span>` : ""}${pending ? `<span class="tag p">${pending} לא בגיליון</span>` : ""}${stale ? `<span class="tag w">${stale} לא מעודכנים</span>` : ""}</div>` : ""}
@@ -477,7 +477,7 @@ $("enableFace2").addEventListener("click", enableFace);
 $("faceLater").addEventListener("click", () => { localStorage.setItem("salesdesk.faceLater", "1"); $("faceAsk").hidden = true; });
 $("refresh").addEventListener("click", async () => { const b = $("refresh"); b.classList.add("spin"); await load(""); b.classList.remove("spin"); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden && state) load(""); });
-load("");
+load("", faceSaved() && window.PublicKeyCredential ? "auto" : false);
 </script>
 </body>
 </html>
