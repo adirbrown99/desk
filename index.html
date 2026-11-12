@@ -79,6 +79,13 @@ h2 small { color: var(--muted); font-weight: 500; font-size: 14px; }
 .back { border: 0; background: none; color: var(--emerald); font: inherit; font-weight: 700; padding: 0 0 10px; }
 .tap { cursor: pointer; }
 .comm2 { font-size: 13px; color: #9a7420; font-weight: 700; }
+.goldcard { position: relative; overflow: hidden; color: #3b2a04; border: 0;
+  background: linear-gradient(135deg, #fff1bf 0%, #f3cf6e 38%, #d9a636 72%, #b9831c 100%);
+  box-shadow: 0 12px 34px rgba(217,166,54,.55), inset 0 1px 0 rgba(255,255,255,.75); }
+.goldcard::after { content: ""; position: absolute; inset: -40% -10% auto auto; width: 70%; height: 140%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255,255,255,.55), transparent); transform: rotate(18deg); }
+.goldcard .ttl { font-weight: 700; font-size: 15px; opacity: .8; }
+.goldcard .v { font-size: 40px; font-weight: 900; letter-spacing: -.5px; text-shadow: 0 1px 0 rgba(255,255,255,.5); }
 .sc { color: #a87a14; font-weight: 800; } .tr { color: var(--emerald); font-weight: 800; }
 .pair { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 15px; }
 .key { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); margin: -4px 0 10px; }
@@ -153,7 +160,7 @@ nav button.on { background: var(--deep); color: var(--gold-light); }
   <div class="stamp"><span id="stamp"></span> · <button id="lock">נעילה</button><span id="faceSet" hidden> · <button id="enableFace">הפעלת Face ID</button></span></div>
 </main>
 <nav id="nav" hidden>
-  <button data-tab="home">בית</button><button data-tab="clients">לקוחות</button><button data-tab="comm">עמלות</button><button data-tab="deals">עסקאות</button>
+  <button data-tab="home">בית</button><button data-tab="comm">עמלות</button><button data-tab="clients">לקוחות</button><button data-tab="deals">עסקאות</button>
 </nav>
 <div id="sheet" class="sheet-bg" hidden><div class="sheet" id="sheetBody"></div></div>
 <script src="engine.js"></script>
@@ -166,7 +173,7 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
-const PAGE = "6c1925";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "a8b2e2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -421,10 +428,9 @@ function comm() {
   }
   const tile = (t, v, s) => `<div class="card"><div class="label">${t}</div><div class="mid num">${v}</div><div class="small">${s}</div></div>`;
   return `<div class="tap" data-comm="clients">${nifraim(c)}</div>
-    <div class="card tap" data-comm="clients"><div class="label">הבונוס החודשי שלי על היקף</div><div class="big num sc">${money(c.scope)}</div>
-      <div class="small">מחושב לפי מה שנמכר, לא אומת מול הפקה${c.estimated ? ` · ${c.estimated} מוערכות לפי שכר` : ""}${c.questions ? ` · ${c.questions} בירורים` : ""} · לחיצה לפירוט לפי לקוח</div></div>
-    <div class="card"><div class="label">פרמיה חדשה לפי חודש · לחיצה על חודש לעמלות שלו</div>
-      <div class="chart">${state.months.map(x => `<div class="tap ${x.month === month ? "on" : ""}" data-cmonth="${x.month}"><em class="num">${Math.round(x.premium).toLocaleString("he-IL")}</em>
+    <div class="card goldcard tap" data-comm="clients"><div class="ttl">ההיקף החודשי</div><div class="v num">${money(c.scope)}</div></div>
+    <div class="card"><div class="label">פרמיה חדשה לפי חודש · לחיצה על חודש בוחרת אותו</div>
+      <div class="chart">${state.months.map(x => `<div class="tap ${x.month === month ? "on" : ""}" data-pick="${x.month}"><em class="num">${Math.round(x.premium).toLocaleString("he-IL")}</em>
         <i style="height:${Math.round(x.premium / Math.max(...state.months.map(y => y.premium), 1) * 100)}%"></i><span>${shortMonth(x.month)}</span></div>`).join("")}</div></div>
     <div class="card"><div class="label">הדרך שעשית מאז ${monthName(state.months[0].month)}</div>
       <div class="big em num">${money(state.insights.totalPremium)}</div>
@@ -506,6 +512,7 @@ $("view").addEventListener("click", e => {
   if ((x = at("[data-cclient]"))) return clientSheet(x.dataset.cclient, true);
   if ((x = at("[data-cdeal]"))) return dealSheet(x.dataset.cdeal, true);
   if ((x = at("[data-deal]"))) return dealSheet(x.dataset.deal, false);
+  if ((x = at("[data-pick]"))) { month = x.dataset.pick; return render(); }   // the chart only changes the month, like the menu at the top
   if ((x = at("[data-cmonth]"))) { month = x.dataset.cmonth; commView = "month"; render(); return scrollTo(0, 0); }
   if ((x = at("[data-comm]"))) { commView = x.dataset.comm; render(); return scrollTo(0, 0); }
   if ((x = at("[data-client]"))) return clientSheet(x.dataset.client, false);
