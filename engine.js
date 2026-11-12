@@ -40,6 +40,10 @@ const Engine = (() => {
   const IGNORE = () => new RegExp("(?:זוג|יחיד|בעל|אישה|אורי|הורים)\\s*\\+\\s*\\d+|ל?\\d+\\s*(?:ילדים|בנות|בנים|בגירים|נפשות)|הנחה\\s*\\d+\\s*%|\\d+\\s*%|מס(?:פר)?\\.? סוכן\\s*\\d+|מספר פוליסה\\s*\\d+|שוגר(?:ה)? דיגיטלית|לא שוגר|ללא ביטול(?:ים)?|"
     + "מצורף [^,.]*|הרשאה לחיוב[^,.]*|מצב(?: טופס)?|טופס הצטרפות|ש״ח|ש\"ח|₪", "g");
   const ignore = s => s.replace(IGNORE(), " ");
+  const MONEY_PRODUCT = "(?:פנסיה|השתלמות|גמל להשקעה|גמל)";
+  const ONE_COMPANY = "(?:" + BY_LENGTH.join("|") + ")";
+  const FIXED_MONEY = new RegExp("^(?:(?:(?:ניוד|הצטרפות|הפקדה)\\s+)?" + MONEY_PRODUCT + "\\s+" + ONE_COMPANY
+    + "|מינוי\\s+" + ONE_COMPANY + "\\s+" + MONEY_PRODUCT + ")(?:\\s+(?:הפקדה|צבירה|שכר)\\s+\\d+(?:\\.\\d+)?)+$");
 
   const number = t => parseFloat(t.replace(/,/g, ""));
   const big = m => number(m[1]) * (["מיליון", "מילון", "m", "M"].includes(m[2]) ? 1000000 : 1000);
@@ -224,7 +228,7 @@ const Engine = (() => {
       if (prod === "גמל להשקעה") families.delete("גמל");
       if (families.size > 1 && deal.sure) { deal.sure = false; deal.unsure = "שני מוצרים באותו פריט, לא ברור למי שייך הסכום"; }
       if (!deal.sure) why.push(raw);
-      else if (isMoney) why.push(raw);
+      else if (isMoney && !FIXED_MONEY.test(words(clause))) why.push(raw);   // the app's own fixed form is trusted
       deals.push(deal);
     }
     return { deals, confident: !why.length, why };
