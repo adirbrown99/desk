@@ -79,13 +79,11 @@ h2 small { color: var(--muted); font-weight: 500; font-size: 14px; }
 .back { border: 0; background: none; color: var(--emerald); font: inherit; font-weight: 700; padding: 0 0 10px; }
 .tap { cursor: pointer; }
 .comm2 { font-size: 13px; color: #9a7420; font-weight: 700; }
-.goldcard { position: relative; overflow: hidden; color: #3b2a04; border: 0;
-  background: linear-gradient(135deg, #fff1bf 0%, #f3cf6e 38%, #d9a636 72%, #b9831c 100%);
-  box-shadow: 0 12px 34px rgba(217,166,54,.55), inset 0 1px 0 rgba(255,255,255,.75); }
-.goldcard::after { content: ""; position: absolute; inset: -40% -10% auto auto; width: 70%; height: 140%; pointer-events: none;
-  background: radial-gradient(closest-side, rgba(255,255,255,.55), transparent); transform: rotate(18deg); }
-.goldcard .ttl { font-weight: 700; font-size: 15px; opacity: .8; }
-.goldcard .v { font-size: 40px; font-weight: 900; letter-spacing: -.5px; text-shadow: 0 1px 0 rgba(255,255,255,.5); }
+.goldcard { position: relative; overflow: hidden; color: #2a1c00; border: 0;
+  background: linear-gradient(135deg, #f4d27a 0%, #e0b046 40%, #c8922a 75%, #a9761c 100%);
+  box-shadow: 0 12px 30px rgba(200,146,42,.45), 0 0 0 1px rgba(169,118,28,.35) inset; }
+.goldcard .ttl { font-weight: 700; font-size: 15px; color: rgba(42,28,0,.72); }
+.goldcard .v { font-size: 40px; font-weight: 900; letter-spacing: -.5px; color: #241800; }
 .sc { color: #a87a14; font-weight: 800; } .tr { color: var(--emerald); font-weight: 800; }
 .pair { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 15px; }
 .key { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); margin: -4px 0 10px; }
@@ -173,7 +171,7 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
-const PAGE = "a8b2e2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "64a8c3";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
