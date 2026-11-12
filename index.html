@@ -35,6 +35,11 @@ body::before {
 header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
 h1 { font-size: 26px; margin: 0; color: var(--deep); font-weight: 800; letter-spacing: -.3px; }
 .sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
+.tools { display: flex; gap: 8px; align-items: center; }
+.refresh { border: 0; width: 38px; height: 38px; border-radius: 12px; background: var(--card); color: var(--deep); font-size: 20px; font-weight: 700; }
+.refresh.spin { opacity: .45; }
+.faceAsk button#enableFace2 { border: 0; font: inherit; font-weight: 700; padding: 9px 16px; border-radius: 12px; background: var(--deep); color: var(--gold-light); }
+.faceAsk .later { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; margin-top: 6px; padding: 0; }
 select.month {
   appearance: none; -webkit-appearance: none; border: 0; font: inherit; font-weight: 700; font-size: 15px; color: var(--deep);
   background: var(--card); padding: 9px 14px; border-radius: 999px; box-shadow: 0 2px 8px rgba(10,61,48,.07); direction: rtl;
@@ -130,8 +135,10 @@ nav button.on { background: var(--deep); color: var(--gold-light); }
 <main id="app" hidden>
   <header>
     <div><h1 id="title"></h1><div class="sub" id="subtitle"></div></div>
-    <select class="month" id="month" aria-label="חודש"></select>
+    <div class="tools"><button class="refresh" id="refresh" aria-label="רענון">↻</button><select class="month" id="month" aria-label="חודש"></select></div>
   </header>
+  <div class="card faceAsk" id="faceAsk" hidden><div class="row"><div><b>כניסה מהירה עם Face ID</b><div class="small">בלי להקליד סיסמה בכל כניסה</div></div>
+    <button id="enableFace2">הפעלה</button></div><button class="later" id="faceLater">לא עכשיו</button></div>
   <section id="view"></section>
   <div class="stamp"><span id="stamp"></span> · <button id="lock">נעילה</button><span id="faceSet" hidden> · <button id="enableFace">הפעלת Face ID</button></span></div>
 </main>
@@ -208,9 +215,9 @@ async function enableFace() {
       const id = new Uint8Array(cred.rawId), r = (cred.getClientExtensionResults() || {}).prf || {};
       if (r.enabled === false) throw new Error("noprf");
       if (r.results && r.results.first) await lockWithFace(id, r.results.first);
-      else { facePending = id; b.textContent = "אישור אחרון ל-Face ID"; return; }   // a second tap: the phone wants a fresh gesture
+      else { facePending = id; b.textContent = $("enableFace2").textContent = "אישור אחרון"; return; }   // a second tap: the phone wants a fresh gesture
     }
-    $("faceSet").hidden = true; liveNote = "Face ID הופעל"; render();
+    $("faceSet").hidden = true; $("faceAsk").hidden = true; liveNote = "Face ID הופעל"; render();
   } catch (e) {
     b.textContent = e.message === "noprf" ? "Face ID לא נתמך כאן" : "הפעלת Face ID";
   }
@@ -245,7 +252,9 @@ async function load(pass, useFace) {
     return;
   }
   faceKeys = keys;
-  $("faceSet").hidden = !(window.PublicKeyCredential && !faceSaved());
+  const offerFace = !!(window.PublicKeyCredential && !faceSaved());
+  $("faceSet").hidden = !offerFace;
+  $("faceAsk").hidden = !(offerFace && !localStorage.getItem("salesdesk.faceLater"));
   if (pass && $("remember").checked) localStorage.setItem(KEY, JSON.stringify({ enc: hex(keys.enc), mac: hex(keys.mac), salt: keys.salt }));
   state.rows = state.rows.filter(r => !r.test); state.clients = state.clients.filter(c => !c.test);
   if (!state.months.some(m => m.month === month)) month = state.months[state.months.length - 1].month;
@@ -327,10 +336,10 @@ function home() {
   const mi = state.months.findIndex(x => x.month === month), m = state.months[mi], prev = state.months[mi - 1], ins = state.insights;
   const best = ins.bestMonth === month, ratio = ins.bestPremium ? Math.min(1, m.premium / ins.bestPremium) : 0;
   const rows = state.rows.filter(r => r.month === month && !r.test);
-  const clients = state.clients.filter(x => x.month === month);
+  const clients = newest(state.clients.filter(x => x.month === month), c => c.order || 0);
   const bySource = {}, counts = {};
-  clients.filter(c => !c.test).forEach(c => { const k = c.source || "לא ידוע"; bySource[k] = bySource[k] || 0; counts[k] = (counts[k] || 0) + 1; });
-  rows.filter(r => r.action === "הצטרפות").forEach(r => { const k = r.source || "לא ידוע"; bySource[k] = (bySource[k] || 0) + (r.premium || 0); });
+  clients.filter(c => !c.test).forEach(c => { const k = lead(c); bySource[k] = bySource[k] || 0; counts[k] = (counts[k] || 0) + 1; });
+  rows.filter(r => r.action === "הצטרפות").forEach(r => { const k = lead(r); bySource[k] = (bySource[k] || 0) + (r.premium || 0); });
   const notes = Object.fromEntries(Object.entries(counts).map(([k, n]) => [k, n + " לקוחות"]));
   const unsure = rows.filter(r => !r.sure).length, pending = clients.filter(c => c.sheetPending).length, stale = clients.filter(c => c.stale).length;
   return `<div class="card dark" style="display:block"><div class="row"><div class="ttl">פרמיה חדשה</div>${m.partial ? '<span class="chipw">חודש בתהליך</span>' : ""}</div>
@@ -343,7 +352,7 @@ function home() {
       <div class="card"><div class="mid num">${m.appointments}</div><div class="small">מינויי סוכן</div></div>
       <div class="card"><div class="mid num">${m.transfers}</div><div class="small">ניודים</div></div>
     </div>
-    ${breakdown("פרמיה לפי מוצר", premiumBy(rows, r => r.product))}
+    ${breakdown("פרמיה לפי מוצר", premiumBy(rows, r => ["בריאות", "מחלות קשות", "בריאות + מחלות"].includes(r.product) ? "בריאות" : r.product))}
     ${breakdown("פרמיה לפי חברה", premiumBy(rows, r => r.company))}
     ${breakdown("לפי מקור ליד", fold(bySource, notes))}
     ${unsure + pending + stale ? `<div class="chips" style="margin:0 0 10px;padding:0"><span class="small" style="align-self:center">לטיפול</span>
@@ -352,19 +361,24 @@ function home() {
 }
 function clientCard(c) {
   const mine = state.rows.filter(r => r.clientId === c.id);
-  return `<button class="card client" data-client="${esc(c.id)}"><div class="row"><span class="name">${esc(c.name)}</span><span class="small">${esc(c.source)}</span></div>
+  return `<button class="card client" data-client="${esc(c.id)}"><div class="row"><span class="name">${esc(c.name)}</span><span class="small">${esc(lead(c))}</span></div>
     ${mine.length ? mine.slice(0, 3).map(r => dealLine(r, false)).join("") : '<div class="small" style="padding:4px 0">ללא מכירה</div>'}
     ${mine.length > 3 ? `<div class="small">ועוד ${mine.length - 3} עסקאות</div>` : ""}</button>`;
 }
+// Newest purchase first: the sheet's row order (a sale not yet in the sheet is newest). Ties keep the file's order.
+const newest = (list, order) => list.map((x, i) => [x, i]).sort((a, b) => (order(b[0]) - order(a[0])) || (a[1] - b[1])).map(x => x[0]);
+const clientOrder = () => Object.fromEntries(state.clients.map(c => [c.id, c.order || 0]));
+const lead = x => x.lead || x.source || "לא ידוע";
 function clients() {
   const q = query.trim();
-  const list = q ? state.clients.filter(c => c.name.includes(q)) : state.clients.filter(c => c.month === month);
+  const list = newest(q ? state.clients.filter(c => c.name.includes(q)) : state.clients.filter(c => c.month === month), c => c.order || 0);
   return `<input class="search" id="q" placeholder="חיפוש לקוח בכל החודשים" value="${esc(query)}">
     <h2>${q ? "תוצאות" : "לקוחות " + monthName(month)} <small>${list.length}</small></h2>
     ${list.map(clientCard).join("") || '<div class="small">לא נמצאו לקוחות</div>'}`;
 }
 function deals() {
-  const all = state.rows.filter(r => r.month === month);
+  const order = clientOrder();
+  const all = newest(state.rows.filter(r => r.month === month), r => order[r.clientId] || r.order || 0);
   const kinds = ["הכול", ...new Set(all.map(r => r.commission.label))];
   const list = all.filter(r => (kind === "הכול" || r.commission.label === kind) && (!onlyOpen || question(r)));
   const open = all.filter(question).length;
@@ -417,7 +431,7 @@ function clientSheet(id) {
   const trailing = rows.reduce((s, r) => s + (r.commission.trailing || 0), 0);
   const initials = c.name.split(" ").slice(0, 2).map(w => w[0]).join("");
   $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:12px"><div class="row" style="justify-content:flex-start;gap:12px">
-      <div class="avatar">${esc(initials)}</div><div><div class="name" style="font-size:19px">${esc(c.name)}</div><div class="small">${esc(c.source)} · ${monthName(c.month)}</div></div></div>
+      <div class="avatar">${esc(initials)}</div><div><div class="name" style="font-size:19px">${esc(c.name)}</div><div class="small">${esc(lead(c))} · ${monthName(c.month)}</div></div></div>
       <button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
     <div class="chips" style="margin:0 0 10px;padding:0"><span class="tag">${rows.length} מוצרים</span>
       ${premium ? `<span class="tag num" style="color:var(--emerald)">פרמיה ${money(premium)}</span>` : ""}
@@ -459,6 +473,9 @@ $("pass").addEventListener("keydown", e => { if (e.key === "Enter") load($("pass
 $("lock").addEventListener("click", () => { localStorage.removeItem(KEY); state = null; faceKeys = null; showLogin(""); });
 $("face").addEventListener("click", () => load("", true));
 $("enableFace").addEventListener("click", enableFace);
+$("enableFace2").addEventListener("click", enableFace);
+$("faceLater").addEventListener("click", () => { localStorage.setItem("salesdesk.faceLater", "1"); $("faceAsk").hidden = true; });
+$("refresh").addEventListener("click", async () => { const b = $("refresh"); b.classList.add("spin"); await load(""); b.classList.remove("spin"); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden && state) load(""); });
 load("");
 </script>
