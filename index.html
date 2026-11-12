@@ -138,6 +138,7 @@ nav button.on { background: var(--deep); color: var(--gold-light); }
   <button data-tab="comm">עמלות</button><button data-tab="report">דוח</button>
 </nav>
 <div id="sheet" class="sheet-bg" hidden><div class="sheet" id="sheetBody"></div></div>
+<script src="engine.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const MONTHS = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
@@ -184,6 +185,33 @@ async function load(pass) {
   state.rows = state.rows.filter(r => !r.test); state.clients = state.clients.filter(c => !c.test);
   if (!state.months.some(m => m.month === month)) month = state.months[state.months.length - 1].month;
   $("login").hidden = true; $("app").hidden = false; $("nav").hidden = false; $("pass").value = "";
+  liveNote = "";
+  render();
+  live();
+}
+
+// ---------- the live sheet: the phone reads it by itself (read-only key), so it is current even with the Mac off
+let liveNote = "";
+async function live() {
+  if (!state || !state.live || !state.sheet || typeof Engine === "undefined") return;
+  const d = new Date(), today = String(d.getMonth() + 1).padStart(2, "0") + "/" + String(d.getFullYear() % 100).padStart(2, "0");
+  // The phone's engine must reproduce the Mac's own figures before it is trusted with new rows.
+  if (!Engine.agrees(state, today)) { liveNote = "מוצג מצב מה-Mac (החישוב באייפון לא תואם)"; render(); return; }
+  liveNote = "בודק את הגיליון…"; render();
+  try {
+    const res = await fetch(state.live.url, { method: "POST", body: JSON.stringify({ token: state.live.token, action: "read" }) });
+    const out = await res.json();
+    if (!out.ok) throw new Error(out.error);
+    const r = Engine.applyLive(state, out.rows, today);
+    if (r.error) liveNote = "מוצג מצב מה-Mac (" + r.error + ")";
+    else {
+      state = r.state;
+      state.rows = state.rows.filter(x => !x.test); state.clients = state.clients.filter(c => !c.test);
+      const t = new Date().toTimeString().slice(0, 5);
+      liveNote = "גיליון: עודכן " + t + (r.changed ? ` · ${r.changed} שורות חדשות נקראו באייפון` : "");
+    }
+  } catch (e) { liveNote = "אין חיבור לגיליון · מוצג מצב מה-Mac"; }
+  if (!state.months.some(m => m.month === month)) month = state.months[state.months.length - 1].month;
   render();
 }
 function showLogin(msg) { $("login").hidden = false; $("app").hidden = true; $("nav").hidden = true; $("err").textContent = msg; }
@@ -346,7 +374,7 @@ function render() {
   $("month").innerHTML = state.months.slice().reverse().map(m => `<option value="${m.month}" ${m.month === month ? "selected" : ""}>${monthName(m.month)}</option>`).join("");
   $("view").innerHTML = { home, clients, deals, comm, report }[tab]();
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
-  $("stamp").textContent = "עודכן ב-Mac: " + state.generatedAt.replace("T", " ").slice(0, 16);
+  $("stamp").textContent = "Mac: " + state.generatedAt.replace("T", " ").slice(5, 16) + (liveNote ? " · " + liveNote : "");
 }
 
 $("month").addEventListener("change", e => { month = e.target.value; render(); });
