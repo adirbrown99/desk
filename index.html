@@ -107,6 +107,7 @@ nav button.on { background: var(--deep); color: var(--gold-light); }
 .login { max-width: 340px; margin: 16vh auto 0; text-align: center; }
 .login .logo { width: 72px; height: 72px; border-radius: 20px; margin: 0 auto 16px; background: linear-gradient(135deg, #08332a, #0b6b54); display: grid; place-items: center; color: var(--gold-light); font-size: 34px; }
 .login input[type=password] { width: 100%; font: inherit; font-size: 18px; text-align: center; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: #fff; margin: 16px 0 10px; direction: ltr; }
+.login #face { margin-bottom: 12px; }
 .login button { width: 100%; border: 0; font: inherit; font-weight: 700; font-size: 17px; padding: 14px; border-radius: 14px; background: var(--deep); color: var(--gold-light); }
 .login label { display: flex; gap: 8px; justify-content: center; align-items: center; color: var(--muted); font-size: 14px; margin-top: 12px; }
 .err { color: #b3261e; min-height: 20px; font-size: 14px; margin-top: 10px; }
@@ -120,6 +121,7 @@ nav button.on { background: var(--deep); color: var(--gold-light); }
   <div class="logo">↗</div>
   <h1>Sales Desk</h1>
   <p class="sub">הנתונים מוצפנים. הסיסמה נשארת במכשיר הזה.</p>
+  <button id="face" hidden>כניסה עם Face ID</button>
   <input id="pass" type="password" autocomplete="current-password" aria-label="סיסמה">
   <button id="go">כניסה</button>
   <label><input type="checkbox" id="remember" checked> לזכור במכשיר הזה</label>
@@ -131,7 +133,7 @@ nav button.on { background: var(--deep); color: var(--gold-light); }
     <select class="month" id="month" aria-label="חודש"></select>
   </header>
   <section id="view"></section>
-  <div class="stamp"><span id="stamp"></span> · <button id="lock">נעילה</button></div>
+  <div class="stamp"><span id="stamp"></span> · <button id="lock">נעילה</button><span id="faceSet" hidden> · <button id="enableFace">הפעלת Face ID</button></span></div>
 </main>
 <nav id="nav" hidden>
   <button data-tab="home">בית</button><button data-tab="clients">לקוחות</button><button data-tab="deals">עסקאות</button>
@@ -168,19 +170,82 @@ async function open(env, keys) {
 const hex = u => [...u].map(x => x.toString(16).padStart(2, "0")).join("");
 const unhex = s => Uint8Array.from(s.match(/../g).map(h => parseInt(h, 16)));
 
-async function load(pass) {
+// ---------- Face ID: a passkey on this phone. Its PRF secret (released only after Face ID) locks the unlock keys,
+// so the keys stored on the phone are useless without the owner's face. Nothing about it leaves the phone.
+const FKEY = "salesdesk.faceid";
+const PRF_SALT = new TextEncoder().encode("sales-desk-faceid-v1");
+const rand = n => crypto.getRandomValues(new Uint8Array(n));
+const b64u = u => btoa(String.fromCharCode(...u)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const unb64u = t => Uint8Array.from(atob(t.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
+const faceSaved = () => { try { return JSON.parse(localStorage.getItem(FKEY) || "null"); } catch (e) { return null; } };
+const prfAes = secret => crypto.subtle.importKey("raw", new Uint8Array(secret).slice(0, 32), "AES-GCM", false, ["encrypt", "decrypt"]);
+async function prfSecret(id) {
+  const a = await navigator.credentials.get({ publicKey: { challenge: rand(32), rpId: location.hostname, userVerification: "required",
+    allowCredentials: [{ type: "public-key", id }], extensions: { prf: { eval: { first: PRF_SALT } } } } });
+  const r = (a.getClientExtensionResults() || {}).prf;
+  if (!r || !r.results || !r.results.first) throw new Error("noprf");
+  return r.results.first;
+}
+let faceKeys = null, facePending = null;   // the open session's keys, kept in memory only while enabling
+async function lockWithFace(id, secret) {
+  const k = await prfAes(secret), iv = rand(12);
+  const plain = new TextEncoder().encode(JSON.stringify({ enc: hex(faceKeys.enc), mac: hex(faceKeys.mac) }));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, plain));
+  localStorage.setItem(FKEY, JSON.stringify({ id: b64u(id), iv: b64u(iv), ct: b64u(ct), salt: faceKeys.salt }));
+  localStorage.removeItem(KEY);   // Face ID replaces the plain "remember me"
+  facePending = null;
+}
+async function enableFace() {
+  const b = $("enableFace");
+  try {
+    if (facePending) { await lockWithFace(facePending, await prfSecret(facePending)); }
+    else {
+      const cred = await navigator.credentials.create({ publicKey: { challenge: rand(32), rp: { name: "Sales Desk", id: location.hostname },
+        user: { id: rand(16), name: "Sales Desk", displayName: "Sales Desk" },
+        pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+        authenticatorSelection: { authenticatorAttachment: "platform", residentKey: "required", userVerification: "required" },
+        extensions: { prf: { eval: { first: PRF_SALT } } } } });
+      const id = new Uint8Array(cred.rawId), r = (cred.getClientExtensionResults() || {}).prf || {};
+      if (r.enabled === false) throw new Error("noprf");
+      if (r.results && r.results.first) await lockWithFace(id, r.results.first);
+      else { facePending = id; b.textContent = "אישור אחרון ל-Face ID"; return; }   // a second tap: the phone wants a fresh gesture
+    }
+    $("faceSet").hidden = true; liveNote = "Face ID הופעל"; render();
+  } catch (e) {
+    b.textContent = e.message === "noprf" ? "Face ID לא נתמך כאן" : "הפעלת Face ID";
+  }
+}
+async function keysFromFace(saved) {
+  const k = await prfAes(await prfSecret(unb64u(saved.id)));
+  const o = JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64u(saved.iv) }, k, unb64u(saved.ct))));
+  return { enc: unhex(o.enc), mac: unhex(o.mac), salt: saved.salt };
+}
+
+async function load(pass, useFace) {
   if (!window.crypto || !crypto.subtle) { showLogin("הדפדפן חוסם פענוח בכתובת לא מאובטחת. צריך כתובת https."); return; }
   let env;
   try { env = await (await fetch("snapshot.enc.json", { cache: "no-store" })).json(); }
   catch (e) { showLogin("לא הצלחתי להביא את הנתונים. בדוק חיבור."); return; }
   let keys = null;
   try {
-    const saved = JSON.parse(localStorage.getItem(KEY) || "null");
+    const saved = JSON.parse(localStorage.getItem(KEY) || "null"), face = faceSaved();
     if (pass) keys = await deriveKeys(pass, env);
+    else if (useFace && face) {
+      try { keys = await keysFromFace(face); }
+      catch (e) { showLogin(e.name === "NotAllowedError" ? "" : "Face ID לא זמין. אפשר להיכנס בסיסמה."); return; }
+    }
+    else if (faceKeys && faceKeys.salt === env.salt) keys = faceKeys;   // back from the background: same session, no new prompt
     else if (saved && saved.salt === env.salt) keys = { enc: unhex(saved.enc), mac: unhex(saved.mac), salt: saved.salt };
     if (!keys) { showLogin(""); return; }
     state = await open(env, keys);
-  } catch (e) { localStorage.removeItem(KEY); showLogin(pass ? "סיסמה שגויה" : ""); return; }
+  } catch (e) {
+    localStorage.removeItem(KEY);
+    if (useFace) localStorage.removeItem(FKEY);   // the passphrase changed since Face ID was set: it is set again after the next login
+    showLogin(pass ? "סיסמה שגויה" : useFace ? "הסיסמה הוחלפה. צריך להיכנס שוב בסיסמה." : "");
+    return;
+  }
+  faceKeys = keys;
+  $("faceSet").hidden = !(window.PublicKeyCredential && !faceSaved());
   if (pass && $("remember").checked) localStorage.setItem(KEY, JSON.stringify({ enc: hex(keys.enc), mac: hex(keys.mac), salt: keys.salt }));
   state.rows = state.rows.filter(r => !r.test); state.clients = state.clients.filter(c => !c.test);
   if (!state.months.some(m => m.month === month)) month = state.months[state.months.length - 1].month;
@@ -214,7 +279,10 @@ async function live() {
   if (!state.months.some(m => m.month === month)) month = state.months[state.months.length - 1].month;
   render();
 }
-function showLogin(msg) { $("login").hidden = false; $("app").hidden = true; $("nav").hidden = true; $("err").textContent = msg; }
+function showLogin(msg) {
+  $("login").hidden = false; $("app").hidden = true; $("nav").hidden = true; $("err").textContent = msg;
+  $("face").hidden = !(faceSaved() && window.PublicKeyCredential);
+}
 
 // ---------- pieces
 function amount(r) {
@@ -388,7 +456,9 @@ $("view").addEventListener("input", e => { if (e.target.id === "q") { query = e.
 $("sheet").addEventListener("click", e => { if (e.target.id === "sheet" || e.target.id === "closeSheet") $("sheet").hidden = true; });
 $("go").addEventListener("click", () => load($("pass").value));
 $("pass").addEventListener("keydown", e => { if (e.key === "Enter") load($("pass").value); });
-$("lock").addEventListener("click", () => { localStorage.removeItem(KEY); state = null; showLogin(""); });
+$("lock").addEventListener("click", () => { localStorage.removeItem(KEY); state = null; faceKeys = null; showLogin(""); });
+$("face").addEventListener("click", () => load("", true));
+$("enableFace").addEventListener("click", enableFace);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && state) load(""); });
 load("");
 </script>
