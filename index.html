@@ -199,7 +199,6 @@ async function lockWithFace(id, secret) {
   const plain = new TextEncoder().encode(JSON.stringify({ enc: hex(faceKeys.enc), mac: hex(faceKeys.mac) }));
   const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, plain));
   localStorage.setItem(FKEY, JSON.stringify({ id: b64u(id), iv: b64u(iv), ct: b64u(ct), salt: faceKeys.salt }));
-  localStorage.removeItem(KEY);   // Face ID replaces the plain "remember me"
   facePending = null;
 }
 async function enableFace() {
@@ -237,6 +236,8 @@ async function load(pass, useFace) {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || "null"), face = faceSaved();
     if (pass) keys = await deriveKeys(pass, env);
+    // "Remember on this device" wins: the app opens straight away. Face ID is for when it is not remembered (or after "נעילה").
+    else if (saved && saved.salt === env.salt && useFace !== true) keys = { enc: unhex(saved.enc), mac: unhex(saved.mac), salt: saved.salt };
     else if (useFace && face) {
       try { keys = await keysFromFace(face); }
       catch (e) { showLogin(e.name === "NotAllowedError" || useFace === "auto" ? "" : "Face ID לא זמין. אפשר להיכנס בסיסמה."); return; }
@@ -255,7 +256,7 @@ async function load(pass, useFace) {
   const offerFace = !!(window.PublicKeyCredential && !faceSaved());
   $("faceSet").hidden = !offerFace;
   $("faceAsk").hidden = !(offerFace && !localStorage.getItem("salesdesk.faceLater"));
-  if (pass && $("remember").checked) localStorage.setItem(KEY, JSON.stringify({ enc: hex(keys.enc), mac: hex(keys.mac), salt: keys.salt }));
+  if ((pass || useFace) && $("remember").checked) localStorage.setItem(KEY, JSON.stringify({ enc: hex(keys.enc), mac: hex(keys.mac), salt: keys.salt }));
   state.rows = state.rows.filter(r => !r.test); state.clients = state.clients.filter(c => !c.test);
   if (!state.months.some(m => m.month === month)) month = state.months[state.months.length - 1].month;
   $("login").hidden = true; $("app").hidden = false; $("nav").hidden = false; $("pass").value = "";
