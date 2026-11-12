@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sales Desk">
+<meta name="theme-color" content="#faf5eb">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Sales Desk</title>
+<style>
+:root {
+  --deep: #0a3d30; --emerald: #0f8566; --mint: #c7eddb; --gold: #cc9e38; --gold-light: #fadb8c;
+  --cream: #faf5eb; --peach: #fce6d1; --plum: #735c9e; --ink: #12322a; --muted: #6f7b76;
+  --card: rgba(255,255,255,.84); --line: rgba(10,61,48,.08); --orange: #c9741a;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body {
+  font-family: -apple-system, "SF Pro Text", "Heebo", system-ui, sans-serif; color: var(--ink);
+  background: var(--cream); min-height: 100dvh; overflow-x: hidden;
+  padding: calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 96px);
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(60% 40% at 100% 0%, var(--mint), transparent 70%),
+              radial-gradient(55% 38% at 0% 12%, var(--peach), transparent 70%),
+              radial-gradient(60% 40% at 40% 100%, rgba(250,219,140,.5), transparent 70%);
+}
+.num { font-family: ui-rounded, -apple-system, system-ui; font-variant-numeric: tabular-nums; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
+h1 { font-size: 26px; margin: 0; color: var(--deep); font-weight: 800; letter-spacing: -.3px; }
+.sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
+select.month {
+  appearance: none; -webkit-appearance: none; border: 0; font: inherit; font-weight: 700; font-size: 15px; color: var(--deep);
+  background: var(--card); padding: 9px 14px; border-radius: 999px; box-shadow: 0 2px 8px rgba(10,61,48,.07); direction: rtl;
+}
+.card { background: var(--card); border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(10,61,48,.06); }
+.dark { background: linear-gradient(135deg, #08332a, #0b6b54); color: #fff; box-shadow: 0 8px 20px rgba(10,61,48,.2); display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.dark .ttl { font-size: 16px; font-weight: 600; opacity: .9; }
+.dark .v { font-size: 44px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; margin-top: 6px; }
+.delta { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.14); color: var(--mint); font-weight: 700; padding: 8px 11px; border-radius: 12px; white-space: nowrap; font-size: 16px; direction: ltr; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid2 .card, .grid3 .card { margin: 0; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+.label { color: var(--muted); font-size: 13px; font-weight: 500; }
+.big { font-size: 25px; font-weight: 800; color: var(--deep); margin: 2px 0; }
+.big.em { color: var(--emerald); } .big.gold { color: var(--gold); }
+.mid { font-size: 19px; font-weight: 700; color: var(--deep); }
+.small { font-size: 12px; color: var(--muted); }
+.bar { height: 6px; border-radius: 999px; background: rgba(15,133,102,.12); overflow: hidden; margin: 8px 0 6px; }
+.bar.thin { height: 5px; margin: 4px 0 0; }
+.bar.thin i { background: rgba(15,133,102,.75); }
+.bar.onDark { background: rgba(255,255,255,.14); }
+.card.dark .sub { font-size: 12.5px; color: rgba(255,255,255,.75); }
+.chipw { font-size: 12px; font-weight: 700; color: #c7eedb; background: rgba(255,255,255,.09); padding: 4px 9px; border-radius: 999px; }
+.bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #cc9e38, #fadb8c); }
+h2 { font-size: 18px; margin: 16px 2px 8px; color: var(--deep); font-weight: 800; }
+h2 small { color: var(--muted); font-weight: 500; font-size: 14px; }
+.chart { display: flex; align-items: flex-end; gap: 10px; height: 130px; direction: ltr; padding-top: 16px; }
+.chart div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
+.chart em { font-style: normal; font-size: 11px; color: var(--muted); }
+.chart i { width: 100%; max-width: 44px; border-radius: 6px 6px 3px 3px; background: rgba(15,133,102,.28); min-height: 4px; }
+.chart .on i { background: var(--emerald); }
+.chart span { font-size: 11px; color: var(--muted); }
+.client { display: block; width: 100%; text-align: right; border: 0; font: inherit; color: inherit; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.name { font-weight: 700; font-size: 16px; color: var(--deep); }
+.deal { display: flex; align-items: center; gap: 7px; font-size: 14.5px; padding: 3px 0; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: #999; }
+.j { color: var(--emerald); } .a { color: #9a7420; } .t { color: var(--plum); }
+.dot.j { background: var(--emerald); } .dot.a { background: var(--gold); } .dot.t { background: var(--plum); }
+.what { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.amt { font-weight: 600; color: var(--deep); white-space: nowrap; }
+.tag { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; background: rgba(111,123,118,.14); color: var(--muted); }
+.tag.w { background: rgba(201,116,26,.14); color: var(--orange); } .tag.p { background: rgba(115,92,158,.13); color: var(--plum); }
+.note { font-size: 12.5px; color: var(--muted); padding: 0 14px 4px 0; }
+.note.w { color: var(--orange); }
+.total { display: flex; justify-content: space-between; font-weight: 800; color: var(--emerald); font-size: 16px; padding-top: 9px; border-top: 1px solid var(--line); margin-top: 6px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 10px; padding: 2px 16px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chips button { flex: none; border: 0; font: inherit; font-size: 14px; font-weight: 600; padding: 7px 13px; border-radius: 999px; background: var(--card); color: var(--ink); }
+.chips button.on { background: var(--deep); color: var(--gold-light); }
+input.search { width: 100%; border: 0; font: inherit; font-size: 16px; padding: 11px 14px; border-radius: 12px; background: var(--card); margin-bottom: 10px; box-shadow: 0 2px 8px rgba(10,61,48,.05); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: right; color: var(--muted); font-weight: 600; font-size: 12px; padding: 4px 0 6px; }
+td { padding: 7px 0; border-top: 1px solid var(--line); }
+tr.on td { color: var(--emerald); font-weight: 700; }
+nav {
+  position: fixed; inset: auto 12px calc(env(safe-area-inset-bottom) + 12px); display: flex; gap: 2px; padding: 5px;
+  background: rgba(255,255,255,.86); border-radius: 22px; backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: 0 10px 28px rgba(10,61,48,.18);
+}
+nav button { flex: 1; border: 0; background: none; font: inherit; font-weight: 700; font-size: 13.5px; padding: 11px 2px; border-radius: 17px; color: var(--muted); }
+nav button.on { background: var(--deep); color: var(--gold-light); }
+.folder { display: block; text-align: center; text-decoration: none; font-weight: 700; font-size: 15px; padding: 11px; margin: 0 0 8px; border-radius: 13px; background: var(--deep); color: var(--gold-light); }
+.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 5; display: flex; align-items: flex-end; }
+.sheet { background: var(--cream); width: 100%; max-height: 86dvh; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 18px 16px calc(env(safe-area-inset-bottom) + 20px); }
+.avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #08332a, #0b6b54); color: var(--gold-light); display: grid; place-items: center; font-weight: 800; flex: none; }
+.box { background: #fff; border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; border-right: 4px solid #999; box-shadow: 0 2px 6px rgba(10,61,48,.05); }
+.box.j { border-color: var(--emerald); } .box.a { border-color: var(--gold); } .box.t { border-color: var(--plum); }
+.close { border: 0; background: rgba(0,0,0,.06); width: 34px; height: 34px; border-radius: 50%; font-size: 16px; color: var(--muted); }
+.login { max-width: 340px; margin: 16vh auto 0; text-align: center; }
+.login .logo { width: 72px; height: 72px; border-radius: 20px; margin: 0 auto 16px; background: linear-gradient(135deg, #08332a, #0b6b54); display: grid; place-items: center; color: var(--gold-light); font-size: 34px; }
+.login input[type=password] { width: 100%; font: inherit; font-size: 18px; text-align: center; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: #fff; margin: 16px 0 10px; direction: ltr; }
+.login button { width: 100%; border: 0; font: inherit; font-weight: 700; font-size: 17px; padding: 14px; border-radius: 14px; background: var(--deep); color: var(--gold-light); }
+.login label { display: flex; gap: 8px; justify-content: center; align-items: center; color: var(--muted); font-size: 14px; margin-top: 12px; }
+.err { color: #b3261e; min-height: 20px; font-size: 14px; margin-top: 10px; }
+.stamp { text-align: center; color: var(--muted); font-size: 12px; margin-top: 16px; }
+.stamp button { border: 0; background: none; color: var(--muted); font: inherit; text-decoration: underline; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="login" class="login" hidden>
+  <div class="logo">↗</div>
+  <h1>Sales Desk</h1>
+  <p class="sub">הנתונים מוצפנים. הסיסמה נשארת במכשיר הזה.</p>
+  <input id="pass" type="password" autocomplete="current-password" aria-label="סיסמה">
+  <button id="go">כניסה</button>
+  <label><input type="checkbox" id="remember" checked> לזכור במכשיר הזה</label>
+  <div class="err" id="err"></div>
+</div>
+<main id="app" hidden>
+  <header>
+    <div><h1 id="title"></h1><div class="sub" id="subtitle"></div></div>
+    <select class="month" id="month" aria-label="חודש"></select>
+  </header>
+  <section id="view"></section>
+  <div class="stamp"><span id="stamp"></span> · <button id="lock">נעילה</button></div>
+</main>
+<nav id="nav" hidden>
+  <button data-tab="home">בית</button><button data-tab="clients">לקוחות</button><button data-tab="deals">עסקאות</button>
+  <button data-tab="comm">עמלות</button><button data-tab="report">דוח</button>
+</nav>
+<div id="sheet" class="sheet-bg" hidden><div class="sheet" id="sheetBody"></div></div>
+<script>
+const $ = id => document.getElementById(id);
+const MONTHS = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+const monthName = m => { const [a, b] = (m || "").split("/"); return MONTHS[+a - 1] ? `${MONTHS[+a - 1]} 20${b}` : m; };
+const shortMonth = m => MONTHS[+(m || "").split("/")[0] - 1] || m;
+const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " ₪";   // whole shekels, always
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
+const KEY = "salesdesk.keys";
+let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
+
+// ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function deriveKeys(pass, env) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveBits"]);
+  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: b64(env.salt), iterations: env.iterations }, base, 512));
+  return { enc: bits.slice(0, 32), mac: bits.slice(32), salt: env.salt };
+}
+async function open(env, keys) {
+  const iv = b64(env.iv), ct = b64(env.ct);
+  const macKey = await crypto.subtle.importKey("raw", keys.mac, { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
+  const signed = new Uint8Array(iv.length + ct.length); signed.set(iv); signed.set(ct, iv.length);
+  if (!await crypto.subtle.verify("HMAC", macKey, b64(env.mac), signed)) throw new Error("bad");
+  const encKey = await crypto.subtle.importKey("raw", keys.enc, "AES-CBC", false, ["decrypt"]);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-CBC", iv }, encKey, ct)));
+}
+const hex = u => [...u].map(x => x.toString(16).padStart(2, "0")).join("");
+const unhex = s => Uint8Array.from(s.match(/../g).map(h => parseInt(h, 16)));
+
+async function load(pass) {
+  if (!window.crypto || !crypto.subtle) { showLogin("הדפדפן חוסם פענוח בכתובת לא מאובטחת. צריך כתובת https."); return; }
+  let env;
+  try { env = await (await fetch("snapshot.enc.json", { cache: "no-store" })).json(); }
+  catch (e) { showLogin("לא הצלחתי להביא את הנתונים. בדוק חיבור."); return; }
+  let keys = null;
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (pass) keys = await deriveKeys(pass, env);
+    else if (saved && saved.salt === env.salt) keys = { enc: unhex(saved.enc), mac: unhex(saved.mac), salt: saved.salt };
+    if (!keys) { showLogin(""); return; }
+    state = await open(env, keys);
+  } catch (e) { localStorage.removeItem(KEY); showLogin(pass ? "סיסמה שגויה" : ""); return; }
+  if (pass && $("remember").checked) localStorage.setItem(KEY, JSON.stringify({ enc: hex(keys.enc), mac: hex(keys.mac), salt: keys.salt }));
+  state.rows = state.rows.filter(r => !r.test); state.clients = state.clients.filter(c => !c.test);
+  if (!state.months.some(m => m.month === month)) month = state.months[state.months.length - 1].month;
+  $("login").hidden = true; $("app").hidden = false; $("nav").hidden = false; $("pass").value = "";
+  render();
+}
+function showLogin(msg) { $("login").hidden = false; $("app").hidden = true; $("nav").hidden = true; $("err").textContent = msg; }
+
+// ---------- pieces
+function amount(r) {
+  if (r.premium != null) return money(r.premium);
+  if (r.deposit != null) return "הפקדה " + money(r.deposit);
+  if (r.product === "פנסיה" && r.salary != null) return "שכר " + money(r.salary);
+  if (r.amount != null) return money(r.amount);
+  return "";
+}
+const question = r => r.commission.critical && r.commission.missing ? r.commission.missing : (!r.sure ? (r.unsure || "הפענוח לא ודאי") : null);
+const company = r => r.fromCompany && r.company ? `${r.fromCompany} ← ${r.company}` : (r.company || "");
+function dealLine(r, withClient) {
+  return `<div class="deal"><span class="dot ${cls(r.action)}"></span><span class="${cls(r.action)}" style="font-weight:600">${esc(r.action)}</span>
+    <span class="what">${withClient ? `<b>${esc(r.client)}</b> · ` : ""}${esc([r.product || "לא כתוב", company(r)].filter(Boolean).join(" · "))}</span>
+    ${question(r) ? '<span class="tag w">בירור</span>' : ""}<span class="amt num">${esc(amount(r))}</span></div>`;
+}
+const nifraim = c => `<div class="card dark"><div><div class="ttl">הנפרעים שלי</div><div class="v num">${money(c.trailingMonthly)}</div></div>
+  <div class="delta num">${c.trailingNew >= 0 ? "↗ +" : "↘ "}${money(c.trailingNew)}</div></div>`;
+
+// ---------- screens
+function breakdown(title, items) {
+  const top = Math.max(...items.map(i => i.value), 0);
+  return `<div class="card"><div class="label" style="margin-bottom:8px">${title}</div>
+    ${items.map(i => `<div class="row" style="margin-top:7px"><span><b style="font-weight:600">${esc(i.label)}</b>${i.note ? ` <span class="small">${esc(i.note)}</span>` : ""}</span>
+      <span class="num" style="font-weight:700;color:var(--deep)">${money(i.value) || "0 ₪"}</span></div>
+      <div class="bar thin"><i style="width:${top ? Math.max(i.value ? 3 : 0, i.value / top * 100) : 0}%"></i></div>`).join("")
+      || '<div class="small">אין פרמיה חדשה בחודש הזה</div>'}</div>`;
+}
+// New premium of the month (joins only, as in the month total), grouped; the tail is folded into "אחר".
+function fold(sums, notes) {
+  const all = Object.entries(sums).map(([label, value]) => ({ label, value, note: notes ? notes[label] : "" }))
+    .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label));
+  if (all.length <= 5) return all;
+  return [...all.slice(0, 4), { label: "אחר", value: all.slice(4).reduce((t, i) => t + i.value, 0), note: "" }];
+}
+function premiumBy(rows, key) {
+  const sums = {};
+  rows.filter(r => r.action === "הצטרפות" && (r.premium || 0) > 0).forEach(r => { const k = key(r) || "לא כתוב"; sums[k] = (sums[k] || 0) + r.premium; });
+  return fold(sums);
+}
+function home() {
+  const mi = state.months.findIndex(x => x.month === month), m = state.months[mi], prev = state.months[mi - 1], ins = state.insights;
+  const best = ins.bestMonth === month, ratio = ins.bestPremium ? Math.min(1, m.premium / ins.bestPremium) : 0;
+  const rows = state.rows.filter(r => r.month === month && !r.test);
+  const clients = state.clients.filter(x => x.month === month);
+  const bySource = {}, counts = {};
+  clients.filter(c => !c.test).forEach(c => { const k = c.source || "לא ידוע"; bySource[k] = bySource[k] || 0; counts[k] = (counts[k] || 0) + 1; });
+  rows.filter(r => r.action === "הצטרפות").forEach(r => { const k = r.source || "לא ידוע"; bySource[k] = (bySource[k] || 0) + (r.premium || 0); });
+  const notes = Object.fromEntries(Object.entries(counts).map(([k, n]) => [k, n + " לקוחות"]));
+  const unsure = rows.filter(r => !r.sure).length, pending = clients.filter(c => c.sheetPending).length, stale = clients.filter(c => c.stale).length;
+  return `<div class="card dark" style="display:block"><div class="row"><div class="ttl">פרמיה חדשה</div>${m.partial ? '<span class="chipw">חודש בתהליך</span>' : ""}</div>
+      <div class="v num">${money(m.premium)}</div>
+      <div class="bar onDark"><i style="width:${Math.max(4, ratio * 100)}%"></i></div>
+      <div class="sub num">${best ? "החודש הכי חזק עד היום" : `שיא · ${shortMonth(ins.bestMonth)} ${money(ins.bestPremium)}`}${prev && (best || prev.month !== ins.bestMonth) ? ` &nbsp;·&nbsp; ${shortMonth(prev.month)} ${money(prev.premium)}` : ""}</div></div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="card"><div class="mid num">${m.clients}</div><div class="small">לקוחות</div></div>
+      <div class="card"><div class="mid num">${m.joins}</div><div class="small">הצטרפויות</div></div>
+      <div class="card"><div class="mid num">${m.appointments}</div><div class="small">מינויי סוכן</div></div>
+      <div class="card"><div class="mid num">${m.transfers}</div><div class="small">ניודים</div></div>
+    </div>
+    ${breakdown("פרמיה לפי מוצר", premiumBy(rows, r => r.product))}
+    ${breakdown("פרמיה לפי חברה", premiumBy(rows, r => r.company))}
+    ${breakdown("לפי מקור ליד", fold(bySource, notes))}
+    ${unsure + pending + stale ? `<div class="chips" style="margin:0 0 10px;padding:0"><span class="small" style="align-self:center">לטיפול</span>
+      ${unsure ? `<span class="tag w">${unsure} עסקאות לא ודאיות</span>` : ""}${pending ? `<span class="tag p">${pending} לא בגיליון</span>` : ""}${stale ? `<span class="tag w">${stale} לא מעודכנים</span>` : ""}</div>` : ""}
+    <h2>לקוחות ${monthName(month)} <small>${clients.length}</small></h2>${clients.map(clientCard).join("")}`;
+}
+function clientCard(c) {
+  const mine = state.rows.filter(r => r.clientId === c.id);
+  return `<button class="card client" data-client="${esc(c.id)}"><div class="row"><span class="name">${esc(c.name)}</span><span class="small">${esc(c.source)}</span></div>
+    ${mine.length ? mine.slice(0, 3).map(r => dealLine(r, false)).join("") : '<div class="small" style="padding:4px 0">ללא מכירה</div>'}
+    ${mine.length > 3 ? `<div class="small">ועוד ${mine.length - 3} עסקאות</div>` : ""}</button>`;
+}
+function clients() {
+  const q = query.trim();
+  const list = q ? state.clients.filter(c => c.name.includes(q)) : state.clients.filter(c => c.month === month);
+  return `<input class="search" id="q" placeholder="חיפוש לקוח בכל החודשים" value="${esc(query)}">
+    <h2>${q ? "תוצאות" : "לקוחות " + monthName(month)} <small>${list.length}</small></h2>
+    ${list.map(clientCard).join("") || '<div class="small">לא נמצאו לקוחות</div>'}`;
+}
+function deals() {
+  const all = state.rows.filter(r => r.month === month);
+  const kinds = ["הכול", ...new Set(all.map(r => r.commission.label))];
+  const list = all.filter(r => (kind === "הכול" || r.commission.label === kind) && (!onlyOpen || question(r)));
+  const open = all.filter(question).length;
+  return `<div class="chips">${kinds.map(k => `<button data-kind="${esc(k)}" class="${k === kind ? "on" : ""}">${esc(k)}</button>`).join("")}
+      <button data-open="1" class="${onlyOpen ? "on" : ""}">בירור כספי ${open}</button></div>
+    <div class="card">${list.map(r => dealLine(r, true) + (question(r) ? `<div class="note w">${esc(question(r))}</div>`
+      : `<div class="note num">היקף ${money(r.commission.scope) || "0 ₪"} · נפרעים ${money(r.commission.trailing) || "0 ₪"}${r.commission.estimated ? " · מוערך" : ""}${r.commission.assumed ? " · הונחה זכאות" : ""}</div>`)).join("")
+      || '<div class="small">אין עסקאות שמתאימות לסינון</div>'}</div>`;
+}
+function comm() {
+  const m = state.months.find(x => x.month === month), c = m.commission, p = c.production;
+  const tile = (t, v, s) => `<div class="card"><div class="label">${t}</div><div class="mid num">${v}</div><div class="small">${s}</div></div>`;
+  return nifraim(c) + `
+    <div class="card"><div class="label">הבונוס החודשי שלי על היקף</div><div class="big gold num">${money(c.scope)}</div>
+      <div class="small">מחושב לפי מה שנמכר, לא אומת מול הפקה${c.estimated ? ` · ${c.estimated} מוערכות לפי שכר` : ""}${c.questions ? ` · ${c.questions} בירורים` : ""}</div></div>
+    <div class="card"><div class="label">פרמיה חדשה לפי חודש</div>
+      <div class="chart">${state.months.map(x => `<div class="${x.month === month ? "on" : ""}"><em class="num">${Math.round(x.premium).toLocaleString("he-IL")}</em>
+        <i style="height:${Math.round(x.premium / Math.max(...state.months.map(y => y.premium), 1) * 100)}%"></i><span>${shortMonth(x.month)}</span></div>`).join("")}</div></div>
+    <div class="card"><div class="label">הדרך שעשית מאז ${monthName(state.months[0].month)}</div>
+      <div class="big em num">${money(state.insights.totalPremium)}</div>
+      <div class="small">פרמיה מצטברת · ${state.insights.totalJoins} הצטרפויות · ${state.insights.totalClients} לקוחות</div></div>
+    <div class="grid2" style="margin-bottom:10px">
+      ${tile("פרמיה חודשית", money(p.new_premium), "ביטוחים חדשים")}${tile("מינוי ביטוח", money(p.appointment_premium), "פרמיות שעברו למינוי")}
+      ${tile("גיוס גמל והשתלמות", money(p.finance_raised), "כספים שגויסו")}${tile("פנסיה", money(p.pension_deposit), "הפקדות חודשיות")}
+      ${tile("פנסיה צבירות", money(p.pension_accumulation), "בניוד · לתצוגה")}${tile("מינוי צבירות פנסיה", money(p.pension_appointment_accumulation), "במינוי · לתצוגה")}
+      ${tile("נפרעים חדשים", money(c.trailingNew), "מעסקאות החודש")}${tile("עסקאות שחושבו", c.computed, "מתוך עסקאות החודש")}
+    </div>
+    <div class="card"><div class="label" style="margin-bottom:6px">השוואת חודשים</div><table>
+      <tr><th>חודש</th><th>היקף</th><th>נפרעים חדשים</th><th>נפרעים לחודש</th></tr>
+      ${state.months.map(x => `<tr class="${x.month === month ? "on" : ""}"><td>${shortMonth(x.month)}</td><td class="num">${money(x.commission.scope)}</td>
+        <td class="num">${money(x.commission.trailingNew)}</td><td class="num">${money(x.commission.trailingMonthly)}</td></tr>`).join("")}</table></div>`;
+}
+function report() {
+  const rows = state.rows.filter(r => r.month === month);
+  const block = (title, list, total) => `<h2>${title} <small>${list.length}</small></h2><div class="card">
+    ${list.map(r => dealLine(r, true)).join("") || '<div class="small">אין שורות בחודש הזה</div>'}
+    ${total && list.length ? `<div class="total"><span>סך הכול</span><span class="num">${money(list.reduce((s, r) => s + (r.premium || 0), 0))}</span></div>` : ""}</div>`;
+  return block("הצטרפויות", rows.filter(r => r.action === "הצטרפות"), true) + block("מינויי סוכן", rows.filter(r => r.action === "מינוי סוכן"), true)
+    + block("פיננסים: ניודים והפקדות", rows.filter(r => r.action !== "הצטרפות" && r.action !== "מינוי סוכן"), false);
+}
+// The documents stay in the user's own iCloud Drive (the Mac's Desktop is synced there). This opens the Files app
+// on that folder; if the phone does not follow the link, the path under the button says where to find it.
+function filesLink(rel) {
+  const base = "/private/var/mobile/Library/Mobile Documents/com~apple~CloudDocs/Desktop/";
+  return "shareddocuments://" + (base + rel).split("/").map(encodeURIComponent).join("/");
+}
+function clientSheet(id) {
+  const c = state.clients.find(x => x.id === id), rows = state.rows.filter(r => r.clientId === id);
+  const premium = rows.filter(r => r.action === "הצטרפות").reduce((s, r) => s + (r.premium || 0), 0);
+  const trailing = rows.reduce((s, r) => s + (r.commission.trailing || 0), 0);
+  const initials = c.name.split(" ").slice(0, 2).map(w => w[0]).join("");
+  $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:12px"><div class="row" style="justify-content:flex-start;gap:12px">
+      <div class="avatar">${esc(initials)}</div><div><div class="name" style="font-size:19px">${esc(c.name)}</div><div class="small">${esc(c.source)} · ${monthName(c.month)}</div></div></div>
+      <button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
+    <div class="chips" style="margin:0 0 10px;padding:0"><span class="tag">${rows.length} מוצרים</span>
+      ${premium ? `<span class="tag num" style="color:var(--emerald)">פרמיה ${money(premium)}</span>` : ""}
+      ${trailing ? `<span class="tag num" style="color:#9a7420">נפרעים ${money(trailing)}</span>` : ""}
+      ${c.sheetPending ? '<span class="tag p">לא בגיליון</span>' : ""}<span class="tag">${c.hasFolder ? c.pdfCount + " מסמכים" : "אין תיקייה"}</span></div>
+    ${c.folderRel ? `<a class="folder" href="${esc(filesLink(c.folderRel))}">📁 פתיחת התיקייה בקבצים</a>
+      <div class="small" style="margin:-4px 0 10px">iCloud Drive › שולחן העבודה › ${esc(c.folderRel.split("/").map(x => x.trim()).join(" › "))}</div>` : ""}
+    ${rows.map(r => `<div class="box ${cls(r.action)}"><div class="row"><span><b style="color:var(--deep)">${esc(r.product || "מוצר לא כתוב")}</b>
+        <span class="${cls(r.action)}" style="font-weight:600"> ${esc(r.action)}</span></span><span class="amt num">${esc(amount(r))}</span></div>
+      <div class="small" style="font-size:13.5px">${esc([company(r), r.person].filter(Boolean).join(" · "))}</div>
+      ${[r.cancels && "ביטול: " + r.cancels, r.lien && "שעבוד: " + r.lien, r.note, r.commission.assumed].filter(Boolean).map(n => `<div class="small">${esc(n)}</div>`).join("")}
+      ${question(r) ? `<div class="small" style="color:var(--orange)">לא ודאי: ${esc(question(r))}</div>` : ""}</div>`).join("") || '<div class="small">ללא מכירה</div>'}
+    ${c.audit.map(a => `<div class="box"><div class="small" style="color:var(--orange)">לבדיקה: ${esc(a)}</div></div>`).join("")}
+    ${c.followup ? `<div class="small" style="margin-top:8px">🔔 ${esc(c.followup)}</div>` : ""}`;
+  $("sheet").hidden = false;
+}
+
+const TITLES = { home: ["", "מצב חודשי"], clients: ["לקוחות", ""], deals: ["עסקאות", ""], comm: ["העמלות שלי", ""], report: ["דוח מכירות", ""] };
+function greeting() { const h = new Date().getHours(); return (h < 5 ? "לילה טוב" : h < 12 ? "בוקר טוב" : h < 17 ? "צהריים טובים" : h < 21 ? "ערב טוב" : "לילה טוב") + ", אדיר"; }
+function render() {
+  $("title").textContent = TITLES[tab][0] || greeting(); $("subtitle").textContent = TITLES[tab][1];
+  $("month").innerHTML = state.months.slice().reverse().map(m => `<option value="${m.month}" ${m.month === month ? "selected" : ""}>${monthName(m.month)}</option>`).join("");
+  $("view").innerHTML = { home, clients, deals, comm, report }[tab]();
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  $("stamp").textContent = "עודכן ב-Mac: " + state.generatedAt.replace("T", " ").slice(0, 16);
+}
+
+$("month").addEventListener("change", e => { month = e.target.value; render(); });
+$("nav").addEventListener("click", e => { const t = e.target.dataset.tab; if (t) { tab = t; render(); scrollTo(0, 0); } });
+$("view").addEventListener("click", e => {
+  const c = e.target.closest("[data-client]"); if (c) return clientSheet(c.dataset.client);
+  const k = e.target.dataset.kind; if (k) { kind = k; return render(); }
+  if (e.target.dataset.open) { onlyOpen = !onlyOpen; render(); }
+});
+$("view").addEventListener("input", e => { if (e.target.id === "q") { query = e.target.value; const pos = e.target.selectionStart; render(); const q = $("q"); q.focus(); q.setSelectionRange(pos, pos); } });
+$("sheet").addEventListener("click", e => { if (e.target.id === "sheet" || e.target.id === "closeSheet") $("sheet").hidden = true; });
+$("go").addEventListener("click", () => load($("pass").value));
+$("pass").addEventListener("keydown", e => { if (e.key === "Enter") load($("pass").value); });
+$("lock").addEventListener("click", () => { localStorage.removeItem(KEY); state = null; showLogin(""); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && state) load(""); });
+load("");
+</script>
+</body>
+</html>
