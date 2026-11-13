@@ -34,16 +34,28 @@ body::before {
 }
 .num { font-family: ui-rounded, -apple-system, system-ui; font-variant-numeric: tabular-nums; }
 header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
-h1 { font-size: 26px; margin: 0; color: var(--deep); font-weight: 800; letter-spacing: -.3px; }
+header > div:first-child { min-width: 0; }
+h1 { font-size: 22px; line-height: 1.15; margin: 0; color: var(--deep); font-weight: 800; letter-spacing: -.3px; }
 .sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
-.tools { display: flex; gap: 8px; align-items: center; }
-.refresh { border: 0; width: 38px; height: 38px; border-radius: 12px; background: var(--card); color: var(--deep); font-size: 20px; font-weight: 700; }
-.refresh.spin { opacity: .45; }
+.tools { display: flex; gap: 7px; align-items: center; flex: none; }
+.icon { border: 0; width: 40px; height: 40px; border-radius: 50%; background: var(--card); color: var(--deep); display: grid; place-items: center; padding: 0;
+  box-shadow: 0 2px 8px rgba(10,61,48,.07); flex: none; }
+.icon svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.icon:active { transform: scale(.94); }
+.icon.spin svg { animation: spin .9s linear infinite; color: var(--emerald); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.find { position: fixed; inset: 0; z-index: 6; background: rgba(0,0,0,.3); }
+.find .panel { background: var(--cream); padding: calc(env(safe-area-inset-top) + 14px) 16px 14px; border-radius: 0 0 22px 22px; max-height: 82dvh; display: flex; flex-direction: column; }
+.find .bar { display: flex; gap: 10px; align-items: center; }
+.find input { flex: 1; min-width: 0; border: 0; font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 14px; background: var(--card); box-shadow: 0 2px 8px rgba(10,61,48,.06); }
+.find .cancel { border: 0; background: none; font: inherit; font-weight: 700; color: var(--emerald); font-size: 16px; padding: 6px 2px; }
+.find .results { overflow-y: auto; margin-top: 12px; }
+.find .hint { color: var(--muted); font-size: 14px; padding: 6px 2px; }
 .faceAsk button#enableFace2 { border: 0; font: inherit; font-weight: 700; padding: 9px 16px; border-radius: 12px; background: var(--deep); color: var(--gold-light); }
 .faceAsk .later { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; margin-top: 6px; padding: 0; }
 select.month {
   appearance: none; -webkit-appearance: none; border: 0; font: inherit; font-weight: 700; font-size: 15px; color: var(--deep);
-  background: var(--card); padding: 9px 14px; border-radius: 999px; box-shadow: 0 2px 8px rgba(10,61,48,.07); direction: rtl;
+  background: var(--card); padding: 10px 12px; border-radius: 999px; box-shadow: 0 2px 8px rgba(10,61,48,.07); direction: rtl;
 }
 .card { background: var(--card); border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(10,61,48,.06); }
 .dark { background: linear-gradient(135deg, #08332a, #0b6b54); color: #fff; box-shadow: 0 8px 20px rgba(10,61,48,.2); display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
@@ -150,13 +162,19 @@ nav button.on { background: var(--deep); color: var(--gold-light); }
 <main id="app" hidden>
   <header>
     <div><h1 id="title"></h1><div class="sub" id="subtitle"></div></div>
-    <div class="tools"><button class="refresh" id="refresh" aria-label="רענון">↻</button><select class="month" id="month" aria-label="חודש"></select></div>
+    <div class="tools">
+      <button class="icon" id="search" aria-label="חיפוש"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></button>
+      <button class="icon" id="refresh" aria-label="רענון"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 3v5h5"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 21v-5h-5"/></svg></button>
+      <select class="month" id="month" aria-label="חודש"></select></div>
   </header>
   <div class="card faceAsk" id="faceAsk" hidden><div class="row"><div><b>כניסה מהירה עם Face ID</b><div class="small">בלי להקליד סיסמה בכל כניסה</div></div>
     <button id="enableFace2">הפעלה</button></div><button class="later" id="faceLater">לא עכשיו</button></div>
   <section id="view"></section>
   <div class="stamp"><span id="stamp"></span> · <button id="lock">נעילה</button><span id="faceSet" hidden> · <button id="enableFace">הפעלת Face ID</button></span></div>
 </main>
+<div class="find" id="find" hidden><div class="panel">
+  <div class="bar"><input id="findq" type="search" placeholder="שם, ת״ז או מקור" autocomplete="off" enterkeyhint="search"><button class="cancel" id="findClose">ביטול</button></div>
+  <div class="results" id="findResults"></div></div></div>
 <nav id="nav" hidden>
   <button data-tab="home">בית</button><button data-tab="comm">עמלות</button><button data-tab="clients">לקוחות</button><button data-tab="deals">עסקאות</button>
 </nav>
@@ -174,7 +192,7 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
-const PAGE = "768a90";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "07d00a";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -388,11 +406,30 @@ function clientCard(c) {
 const newest = (list, order) => list.map((x, i) => [x, i]).sort((a, b) => (order(b[0]) - order(a[0])) || (a[1] - b[1])).map(x => x[0]);
 const clientOrder = () => Object.fromEntries(state.clients.map(c => [c.id, c.order || 0]));
 const lead = x => x.lead || x.source || "לא ידוע";
+// Search, from any tab: name (any part, any order), ID number or lead source, across all months.
+function findClients(q) {
+  const words = q.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  const has = (text, w) => String(text || "").toLowerCase().includes(w.toLowerCase());
+  return newest(state.clients.filter(c => words.every(w => /^\d+$/.test(w)
+    ? String(c.tz || "").replace(/^0+/, "").includes(w.replace(/^0+/, "")) || String(c.tz || "").includes(w)
+    : has(c.name, w) || has(c.source, w) || has(c.lead, w))), c => c.order || 0);
+}
+function findRender() {
+  const q = $("findq").value, list = findClients(q).slice(0, 40), withComm = tab === "comm";
+  $("findResults").innerHTML = !q.trim() ? "" : list.map(c => {
+    const rows = state.rows.filter(r => r.clientId === c.id);
+    const right = withComm
+      ? `<div class="pair num"><span class="sc">${cmoney(rows.reduce((t, r) => t + (r.commission.scope || 0), 0))}</span><span class="tr">${cmoney(rows.reduce((t, r) => t + (r.commission.trailing || 0), 0))}</span></div>`
+      : `<span class="small">${rows.length} מוצרים</span>`;
+    return `<button class="card client" data-found="${esc(c.id)}"><div class="row"><div><div class="name">${esc(c.name)}</div>
+      <div class="small">${esc(lead(c))} · ${monthName(c.month)}</div></div>${right}</div></button>`;
+  }).join("") || '<div class="hint">לא נמצא לקוח</div>';
+}
+function findOpen() { $("findq").value = ""; findRender(); $("find").hidden = false; $("findq").focus(); }
 function clients() {
-  const q = query.trim();
-  const list = newest(q ? state.clients.filter(c => c.name.includes(q)) : state.clients.filter(c => c.month === month), c => c.order || 0);
-  return `<input class="search" id="q" placeholder="חיפוש לקוח בכל החודשים" value="${esc(query)}">
-    <h2>${q ? "תוצאות" : "לקוחות " + monthName(month)} <small>${list.length}</small></h2>
+  const list = newest(state.clients.filter(c => c.month === month), c => c.order || 0);
+  return `<h2>לקוחות ${monthName(month)} <small>${list.length}</small></h2>
     ${list.map(clientCard).join("") || '<div class="small">לא נמצאו לקוחות</div>'}`;
 }
 function deals() {
@@ -518,7 +555,14 @@ $("view").addEventListener("click", e => {
   if ((x = at("[data-comm]"))) { commView = x.dataset.comm; render(); return scrollTo(0, 0); }
   if ((x = at("[data-client]"))) return clientSheet(x.dataset.client, false);
 });
-$("view").addEventListener("input", e => { if (e.target.id === "q") { query = e.target.value; const pos = e.target.selectionStart; render(); const q = $("q"); q.focus(); q.setSelectionRange(pos, pos); } });
+$("search").addEventListener("click", findOpen);
+$("findq").addEventListener("input", findRender);
+$("findq").addEventListener("keydown", e => { if (e.key === "Enter") { const first = $("findResults").querySelector("[data-found]"); if (first) first.click(); } });
+$("find").addEventListener("click", e => {
+  const hit = e.target.closest("[data-found]");
+  if (hit) { $("find").hidden = true; $("findq").blur(); return clientSheet(hit.dataset.found, tab === "comm"); }   // the card as this tab shows it
+  if (e.target.id === "find" || e.target.id === "findClose") { $("find").hidden = true; $("findq").blur(); }
+});
 $("sheet").addEventListener("click", e => {
   const card = e.target.closest("[data-client]");
   if (card) return clientSheet(card.dataset.client, !!card.dataset.commCard);
