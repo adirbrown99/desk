@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Sales Desk">
@@ -19,7 +19,7 @@
   --card: rgba(255,255,255,.84); --line: rgba(10,61,48,.08); --orange: #c9741a;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; }
+html, body { margin: 0; touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   font-family: -apple-system, "SF Pro Text", "Heebo", system-ui, sans-serif; color: var(--ink);
   background: var(--cream); min-height: 100dvh; overflow-x: hidden;
@@ -163,6 +163,9 @@ nav button.on { background: var(--deep); color: var(--gold-light); }
 <div id="sheet" class="sheet-bg" hidden><div class="sheet" id="sheetBody"></div></div>
 <script src="engine.js"></script>
 <script>
+// An app, not a web page: no pinch zoom (Safari ignores the viewport setting on its own); double-tap zoom is off through touch-action.
+["gesturestart", "gesturechange", "gestureend"].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+
 const $ = id => document.getElementById(id);
 const MONTHS = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
 const monthName = m => { const [a, b] = (m || "").split("/"); return MONTHS[+a - 1] ? `${MONTHS[+a - 1]} 20${b}` : m; };
@@ -171,7 +174,7 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
-const PAGE = "64a8c3";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "768a90";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
