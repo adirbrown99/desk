@@ -47,12 +47,14 @@ h1 { font-size: 22px; line-height: 1.15; margin: 0; color: var(--deep); font-wei
 .icon:active { transform: scale(.94); }
 .icon.spin svg { animation: spin .9s linear infinite; color: var(--emerald); }
 @keyframes spin { to { transform: rotate(360deg); } }
-.find { position: fixed; inset: 0; z-index: 6; background: rgba(0,0,0,.3); }
-.find .panel { background: var(--cream); padding: calc(env(safe-area-inset-top) + 14px) 16px 14px; border-radius: 0 0 22px 22px; max-height: 82dvh; display: flex; flex-direction: column; }
+.find { position: fixed; inset: 0; z-index: 6; background: rgba(5,8,18,.6); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.find .panel { background: var(--cream); padding: calc(env(safe-area-inset-top) + 14px) 16px 14px; border-radius: 0 0 22px 22px; max-height: calc(var(--vh, 100dvh) - 24px); display: flex; flex-direction: column; }
 .find .findbar { display: flex; gap: 10px; align-items: center; }
 .find input { flex: 1; min-width: 0; border: 0; font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 14px; background: var(--card); box-shadow: 0 2px 8px rgba(255,255,255,.06); }
 .find .cancel { border: 0; background: none; font: inherit; font-weight: 700; color: var(--emerald); font-size: 16px; padding: 6px 2px; }
-.find .results { overflow-y: auto; margin-top: 12px; }
+.find .results { overflow-y: auto; margin-top: 12px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.find .results::-webkit-scrollbar { display: none; }
+body.locked { position: fixed; left: 0; right: 0; overflow: hidden; }
 .find .hint { color: var(--muted); font-size: 14px; padding: 6px 2px; }
 .faceAsk button#enableFace2 { border: 0; font: inherit; font-weight: 700; padding: 9px 16px; border-radius: 12px; background: var(--fill); color: var(--gold-light); }
 .faceAsk .later { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; margin-top: 6px; padding: 0; }
@@ -133,7 +135,7 @@ nav {
 nav button { flex: 1; border: 0; background: none; font: inherit; font-weight: 700; font-size: 13.5px; padding: 11px 2px; border-radius: 17px; color: var(--muted); }
 nav button.on { background: var(--fill); color: var(--gold-light); }
 .folder { display: block; text-align: center; text-decoration: none; font-weight: 700; font-size: 15px; padding: 11px; margin: 0 0 8px; border-radius: 13px; background: var(--fill); color: var(--gold-light); }
-.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 5; display: flex; align-items: flex-end; }
+.sheet-bg { position: fixed; inset: 0; background: rgba(5,8,18,.6); z-index: 5; display: flex; align-items: flex-end; }
 .sheet { background: var(--cream); width: 100%; max-height: 86dvh; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 18px 16px calc(env(safe-area-inset-bottom) + 20px); }
 .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #3b40a0, #7350c7); color: var(--gold-light); display: grid; place-items: center; font-weight: 800; flex: none; }
 .box { background: var(--card); border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; border-right: 4px solid #999; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
@@ -195,7 +197,7 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
-const PAGE = "1ce48f";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "539271";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -429,7 +431,23 @@ function findRender() {
       <div class="small">${esc(lead(c))} · ${monthName(c.month)}</div></div>${right}</div></button>`;
   }).join("") || '<div class="hint">לא נמצא לקוח</div>';
 }
-function findOpen() { $("findq").value = ""; findRender(); $("find").hidden = false; $("findq").focus(); }
+// On the iPhone a long page (the home screen) must not scroll or jump behind the search while the keyboard is up:
+// the page is pinned where it was, the panel fits above the keyboard, and it comes back to the same place on closing.
+let pinnedAt = 0;
+const fitPanel = () => document.documentElement.style.setProperty("--vh", (window.visualViewport ? visualViewport.height : innerHeight) + "px");
+if (window.visualViewport) visualViewport.addEventListener("resize", fitPanel);
+function findOpen() {
+  pinnedAt = scrollY;
+  document.body.style.top = -pinnedAt + "px";
+  document.body.classList.add("locked");
+  fitPanel();
+  $("findq").value = ""; findRender(); $("find").hidden = false; $("findq").focus();
+}
+function findClose() {
+  $("find").hidden = true; $("findq").blur();
+  document.body.classList.remove("locked"); document.body.style.top = "";
+  scrollTo(0, pinnedAt);
+}
 function clients() {
   const list = newest(state.clients.filter(c => c.month === month), c => c.order || 0);
   return `<h2>לקוחות ${monthName(month)} <small>${list.length}</small></h2>
@@ -563,8 +581,8 @@ $("findq").addEventListener("input", findRender);
 $("findq").addEventListener("keydown", e => { if (e.key === "Enter") { const first = $("findResults").querySelector("[data-found]"); if (first) first.click(); } });
 $("find").addEventListener("click", e => {
   const hit = e.target.closest("[data-found]");
-  if (hit) { $("find").hidden = true; $("findq").blur(); return clientSheet(hit.dataset.found, tab === "comm"); }   // the card as this tab shows it
-  if (e.target.id === "find" || e.target.id === "findClose") { $("find").hidden = true; $("findq").blur(); }
+  if (hit) { findClose(); return clientSheet(hit.dataset.found, tab === "comm"); }   // the card as this tab shows it
+  if (e.target.id === "find" || e.target.id === "findClose") findClose();
 });
 $("sheet").addEventListener("click", e => {
   const card = e.target.closest("[data-client]");
