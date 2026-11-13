@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sales Desk">
-<meta name="theme-color" content="#faf5eb">
+<meta name="theme-color" content="#08100d">
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -14,9 +14,11 @@
 <title>Sales Desk</title>
 <style>
 :root {
-  --deep: #0a3d30; --emerald: #0f8566; --mint: #c7eddb; --gold: #cc9e38; --gold-light: #fadb8c;
-  --cream: #faf5eb; --peach: #fce6d1; --plum: #735c9e; --ink: #12322a; --muted: #6f7b76;
-  --card: rgba(255,255,255,.84); --line: rgba(10,61,48,.08); --orange: #c9741a;
+  /* Dark: deep green-black underneath, darker cards, light text. --deep is the heading colour, --fill the deep green of buttons. */
+  color-scheme: dark;
+  --deep: #e8f2ed; --emerald: #4dc79a; --mint: #c7eddb; --gold: #e6b851; --gold-light: #fadb8c;
+  --cream: #08100d; --peach: rgba(230,184,81,.08); --plum: #ad97e0; --ink: #dce8e2; --muted: #93a39c;
+  --card: #12201b; --line: rgba(255,255,255,.08); --orange: #eb9a45; --fill: #0e5a46;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -28,9 +30,9 @@ body {
 body::before {
   content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(var(--cream), var(--cream)) top / 100% calc(env(safe-area-inset-top) + 8px) no-repeat,
-              radial-gradient(60% 40% at 100% 18%, var(--mint), transparent 70%),
+              radial-gradient(60% 40% at 100% 18%, rgba(77,199,154,.14), transparent 70%),
               radial-gradient(55% 38% at 0% 26%, var(--peach), transparent 70%),
-              radial-gradient(60% 40% at 40% 100%, rgba(250,219,140,.5), transparent 70%);
+              radial-gradient(60% 40% at 40% 100%, rgba(250,219,140,.06), transparent 70%);
 }
 .num { font-family: ui-rounded, -apple-system, system-ui; font-variant-numeric: tabular-nums; }
 header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
@@ -38,8 +40,8 @@ header > div:first-child { min-width: 0; }
 h1 { font-size: 22px; line-height: 1.15; margin: 0; color: var(--deep); font-weight: 800; letter-spacing: -.3px; }
 .sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
 .tools { display: flex; gap: 7px; align-items: center; flex: none; }
-.icon { border: 0; width: 40px; height: 40px; border-radius: 50%; background: var(--card); color: var(--deep); display: grid; place-items: center; padding: 0;
-  box-shadow: 0 2px 8px rgba(10,61,48,.07); flex: none; }
+.icon { border: 0; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a3d31, #0f6e56); color: #fff; border: 1px solid rgba(255,255,255,.08); display: grid; place-items: center; padding: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07); flex: none; }
 .icon svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .icon:active { transform: scale(.94); }
 .icon.spin svg { animation: spin .9s linear infinite; color: var(--emerald); }
@@ -47,18 +49,18 @@ h1 { font-size: 22px; line-height: 1.15; margin: 0; color: var(--deep); font-wei
 .find { position: fixed; inset: 0; z-index: 6; background: rgba(0,0,0,.3); }
 .find .panel { background: var(--cream); padding: calc(env(safe-area-inset-top) + 14px) 16px 14px; border-radius: 0 0 22px 22px; max-height: 82dvh; display: flex; flex-direction: column; }
 .find .bar { display: flex; gap: 10px; align-items: center; }
-.find input { flex: 1; min-width: 0; border: 0; font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 14px; background: var(--card); box-shadow: 0 2px 8px rgba(10,61,48,.06); }
+.find input { flex: 1; min-width: 0; border: 0; font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 14px; background: var(--card); box-shadow: 0 2px 8px rgba(255,255,255,.06); }
 .find .cancel { border: 0; background: none; font: inherit; font-weight: 700; color: var(--emerald); font-size: 16px; padding: 6px 2px; }
 .find .results { overflow-y: auto; margin-top: 12px; }
 .find .hint { color: var(--muted); font-size: 14px; padding: 6px 2px; }
-.faceAsk button#enableFace2 { border: 0; font: inherit; font-weight: 700; padding: 9px 16px; border-radius: 12px; background: var(--deep); color: var(--gold-light); }
+.faceAsk button#enableFace2 { border: 0; font: inherit; font-weight: 700; padding: 9px 16px; border-radius: 12px; background: var(--fill); color: var(--gold-light); }
 .faceAsk .later { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; margin-top: 6px; padding: 0; }
 select.month {
   appearance: none; -webkit-appearance: none; border: 0; font: inherit; font-weight: 700; font-size: 15px; color: var(--deep);
-  background: var(--card); padding: 10px 12px; border-radius: 999px; box-shadow: 0 2px 8px rgba(10,61,48,.07); direction: rtl;
+  background: var(--card); padding: 10px 12px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.07); direction: rtl;
 }
-.card { background: var(--card); border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(10,61,48,.06); }
-.dark { background: linear-gradient(135deg, #08332a, #0b6b54); color: #fff; box-shadow: 0 8px 20px rgba(10,61,48,.2); display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.card { background: var(--card); border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(255,255,255,.06); }
+.dark { background: linear-gradient(135deg, #0a3d31, #0f6e56); border: 1px solid rgba(255,255,255,.06); color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.2); display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
 .dark .ttl { font-size: 16px; font-weight: 600; opacity: .9; }
 .dark .v { font-size: 44px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; margin-top: 6px; }
 .delta { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.14); color: var(--mint); font-weight: 700; padding: 8px 11px; border-radius: 12px; white-space: nowrap; font-size: 16px; direction: ltr; }
@@ -70,7 +72,7 @@ select.month {
 .big.em { color: var(--emerald); } .big.gold { color: var(--gold); }
 .mid { font-size: 19px; font-weight: 700; color: var(--deep); }
 .small { font-size: 12px; color: var(--muted); }
-.bar { height: 6px; border-radius: 999px; background: rgba(15,133,102,.12); overflow: hidden; margin: 8px 0 6px; }
+.bar { height: 6px; border-radius: 999px; background: rgba(77,199,154,.14); overflow: hidden; margin: 8px 0 6px; }
 .bar.thin { height: 5px; margin: 4px 0 0; }
 .bar.thin i { background: rgba(15,133,102,.75); }
 .bar.onDark { background: rgba(255,255,255,.14); }
@@ -90,13 +92,13 @@ h2 small { color: var(--muted); font-weight: 500; font-size: 14px; }
 .dealrow .who { font-weight: 600; color: var(--deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .back { border: 0; background: none; color: var(--emerald); font: inherit; font-weight: 700; padding: 0 0 10px; }
 .tap { cursor: pointer; }
-.comm2 { font-size: 13px; color: #9a7420; font-weight: 700; }
+.comm2 { font-size: 13px; color: var(--gold); font-weight: 700; }
 .goldcard { position: relative; overflow: hidden; color: #2a1c00; border: 0;
   background: linear-gradient(135deg, #f4d27a 0%, #e0b046 40%, #c8922a 75%, #a9761c 100%);
   box-shadow: 0 12px 30px rgba(200,146,42,.45), 0 0 0 1px rgba(169,118,28,.35) inset; }
 .goldcard .ttl { font-weight: 700; font-size: 15px; color: rgba(42,28,0,.72); }
 .goldcard .v { font-size: 40px; font-weight: 900; letter-spacing: -.5px; color: #241800; }
-.sc { color: #a87a14; font-weight: 800; } .tr { color: var(--emerald); font-weight: 800; }
+.sc { color: var(--gold); font-weight: 800; } .tr { color: var(--emerald); font-weight: 800; }
 .pair { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 15px; }
 .key { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); margin: -4px 0 10px; }
 .key i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-left: 5px; vertical-align: -1px; }
@@ -104,7 +106,7 @@ h2 small { color: var(--muted); font-weight: 500; font-size: 14px; }
 .name { font-weight: 700; font-size: 16px; color: var(--deep); }
 .deal { display: flex; align-items: center; gap: 7px; font-size: 14.5px; padding: 3px 0; }
 .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: #999; }
-.j { color: var(--emerald); } .a { color: #9a7420; } .t { color: var(--plum); }
+.j { color: var(--emerald); } .a { color: var(--gold); } .t { color: var(--plum); }
 .dot.j { background: var(--emerald); } .dot.a { background: var(--gold); } .dot.t { background: var(--plum); }
 .what { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .amt { font-weight: 600; color: var(--deep); white-space: nowrap; }
@@ -116,33 +118,33 @@ h2 small { color: var(--muted); font-weight: 500; font-size: 14px; }
 .chips { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 10px; padding: 2px 16px; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
 .chips button { flex: none; border: 0; font: inherit; font-size: 14px; font-weight: 600; padding: 7px 13px; border-radius: 999px; background: var(--card); color: var(--ink); }
-.chips button.on { background: var(--deep); color: var(--gold-light); }
-input.search { width: 100%; border: 0; font: inherit; font-size: 16px; padding: 11px 14px; border-radius: 12px; background: var(--card); margin-bottom: 10px; box-shadow: 0 2px 8px rgba(10,61,48,.05); }
+.chips button.on { background: var(--fill); color: var(--gold-light); }
+input.search { width: 100%; border: 0; font: inherit; font-size: 16px; padding: 11px 14px; border-radius: 12px; background: var(--card); margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
 table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 th { text-align: right; color: var(--muted); font-weight: 600; font-size: 12px; padding: 4px 0 6px; }
 td { padding: 7px 0; border-top: 1px solid var(--line); }
 tr.on td { color: var(--emerald); font-weight: 700; }
 nav {
   position: fixed; inset: auto 12px calc(env(safe-area-inset-bottom) + 12px); display: flex; gap: 2px; padding: 5px;
-  background: rgba(255,255,255,.86); border-radius: 22px; backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  box-shadow: 0 10px 28px rgba(10,61,48,.18);
+  background: rgba(18,32,27,.88); border-radius: 22px; backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: 0 10px 28px rgba(0,0,0,.18);
 }
 nav button { flex: 1; border: 0; background: none; font: inherit; font-weight: 700; font-size: 13.5px; padding: 11px 2px; border-radius: 17px; color: var(--muted); }
-nav button.on { background: var(--deep); color: var(--gold-light); }
-.folder { display: block; text-align: center; text-decoration: none; font-weight: 700; font-size: 15px; padding: 11px; margin: 0 0 8px; border-radius: 13px; background: var(--deep); color: var(--gold-light); }
+nav button.on { background: var(--fill); color: var(--gold-light); }
+.folder { display: block; text-align: center; text-decoration: none; font-weight: 700; font-size: 15px; padding: 11px; margin: 0 0 8px; border-radius: 13px; background: var(--fill); color: var(--gold-light); }
 .sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 5; display: flex; align-items: flex-end; }
 .sheet { background: var(--cream); width: 100%; max-height: 86dvh; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 18px 16px calc(env(safe-area-inset-bottom) + 20px); }
 .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #08332a, #0b6b54); color: var(--gold-light); display: grid; place-items: center; font-weight: 800; flex: none; }
-.box { background: #fff; border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; border-right: 4px solid #999; box-shadow: 0 2px 6px rgba(10,61,48,.05); }
+.box { background: var(--card); border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; border-right: 4px solid #999; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
 .box.j { border-color: var(--emerald); } .box.a { border-color: var(--gold); } .box.t { border-color: var(--plum); }
-.close { border: 0; background: rgba(0,0,0,.06); width: 34px; height: 34px; border-radius: 50%; font-size: 16px; color: var(--muted); }
+.close { border: 0; background: rgba(255,255,255,.08); width: 34px; height: 34px; border-radius: 50%; font-size: 16px; color: var(--muted); }
 .login { max-width: 340px; margin: 16vh auto 0; text-align: center; }
 .login .logo { width: 72px; height: 72px; border-radius: 20px; margin: 0 auto 16px; background: linear-gradient(135deg, #08332a, #0b6b54); display: grid; place-items: center; color: var(--gold-light); font-size: 34px; }
-.login input[type=password] { width: 100%; font: inherit; font-size: 18px; text-align: center; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: #fff; margin: 16px 0 10px; direction: ltr; }
+.login input[type=password] { width: 100%; font: inherit; font-size: 18px; text-align: center; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); margin: 16px 0 10px; direction: ltr; }
 .login #face { margin-bottom: 12px; }
-.login button { width: 100%; border: 0; font: inherit; font-weight: 700; font-size: 17px; padding: 14px; border-radius: 14px; background: var(--deep); color: var(--gold-light); }
+.login button { width: 100%; border: 0; font: inherit; font-weight: 700; font-size: 17px; padding: 14px; border-radius: 14px; background: var(--fill); color: var(--gold-light); }
 .login label { display: flex; gap: 8px; justify-content: center; align-items: center; color: var(--muted); font-size: 14px; margin-top: 12px; }
-.err { color: #b3261e; min-height: 20px; font-size: 14px; margin-top: 10px; }
+.err { color: #ff8a80; min-height: 20px; font-size: 14px; margin-top: 10px; }
 .stamp { text-align: center; color: var(--muted); font-size: 12px; margin-top: 16px; }
 .stamp button { border: 0; background: none; color: var(--muted); font: inherit; text-decoration: underline; }
 [hidden] { display: none !important; }
@@ -192,7 +194,7 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
-const PAGE = "07d00a";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "1cface";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -441,7 +443,7 @@ function deals() {
 }
 let commView = "summary";   // summary · clients (the month's clients with scope and trailing) · month (the month's commissions)
 const cmoney = v => money(v) || "0 ₪";
-const KEY_LINE = `<div class="key"><span><i style="background:#a87a14"></i>היקף</span><span><i style="background:var(--emerald)"></i>נפרעים</span></div>`;
+const KEY_LINE = `<div class="key"><span><i style="background:var(--gold)"></i>היקף</span><span><i style="background:var(--emerald)"></i>נפרעים</span></div>`;
 function comm() {
   const m = state.months.find(x => x.month === month), c = m.commission, p = c.production;
   const back = `<button class="back" data-comm="summary">→ חזרה לסיכום</button>`;
@@ -500,7 +502,7 @@ function clientSheet(id, withComm) {
       <button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
     <div class="chips" style="margin:0 0 10px;padding:0"><span class="tag">${rows.length} מוצרים</span>
       ${premium ? `<span class="tag num" style="color:var(--emerald)">פרמיה ${money(premium)}</span>` : ""}
-      ${withComm ? `<span class="tag num" style="color:#9a7420">היקף ${cmoney(scope)}</span><span class="tag num" style="color:#9a7420">נפרעים ${cmoney(trailing)}</span>` : ""}
+      ${withComm ? `<span class="tag num" style="color:var(--gold)">היקף ${cmoney(scope)}</span><span class="tag num" style="color:var(--gold)">נפרעים ${cmoney(trailing)}</span>` : ""}
       ${c.sheetPending ? '<span class="tag p">לא בגיליון</span>' : ""}<span class="tag">${c.hasFolder ? c.pdfCount + " מסמכים" : "אין תיקייה"}</span></div>
     ${c.folderRel ? `<a class="folder" href="${esc(filesLink(c.folderRel))}">📁 פתיחת התיקייה בקבצים</a>` : ""}
     ${rows.map(r => `<div class="box ${cls(r.action)}"><div class="row"><span><b style="color:var(--deep)">${esc(r.product || "מוצר לא כתוב")}</b>
@@ -518,7 +520,7 @@ function clientSheet(id, withComm) {
 function dealSheet(id, withComm) {
   const r = state.rows.find(x => x.id === id); if (!r) return;
   const c = state.clients.find(x => x.id === r.clientId) || {};
-  const line = (k, v) => v == null || v === "" ? "" : `<div class="row" style="padding:6px 0;border-bottom:1px solid rgba(10,61,48,.06)"><span class="small">${k}</span><b>${esc(String(v))}</b></div>`;
+  const line = (k, v) => v == null || v === "" ? "" : `<div class="row" style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)"><span class="small">${k}</span><b>${esc(String(v))}</b></div>`;
   $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:12px"><div><div class="name" style="font-size:19px">${esc(r.product || "מוצר לא כתוב")}
       <span class="${cls(r.action)}"> ${esc(r.action)}</span></div><div class="small">${esc(r.client)} · ${esc(lead(c))} · ${monthName(r.month)}</div></div>
       <button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
