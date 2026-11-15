@@ -44,7 +44,7 @@ const Engine = (() => {
   const MONEY_PRODUCT = "(?:פנסיה|השתלמות|גמל להשקעה|גמל)";
   const ONE_COMPANY = "(?:" + BY_LENGTH.join("|") + ")";
   const FIXED_MONEY = new RegExp("^(?:(?:(?:ניוד|הצטרפות|הפקדה)\\s+)?" + MONEY_PRODUCT + "\\s+" + ONE_COMPANY
-    + "|מינוי\\s+" + ONE_COMPANY + "\\s+" + MONEY_PRODUCT + ")(?:\\s+(?:הפקדה|צבירה|שכר)\\s+\\d+(?:\\.\\d+)?)+$");
+    + "|מינוי\\s+" + ONE_COMPANY + "\\s+" + MONEY_PRODUCT + ")(?:\\s+(?:הפקדה|צבירה|שכר)\\s+\\d+(?:\\.\\d+)?(?:\\s+(?:מיליון|אלף))?)+$");
   const UNIT = "(?:מיליון|מילון|אלף|א׳|א'|k|K|m|M)(?![א-תa-zA-Z])";
   const LABELED = () => new RegExp("(?:צבירה|הפקדה|הפקדות|שכר)\\s*(?:של\\s*)?" + NUM + "(?:\\s*" + UNIT + ")?|" + NUM + "(?:\\s*" + UNIT + ")?\\s*(?:צבירה|הפקדה)", "g");
   const MONEY_ONLY = new RegExp("^\\s*(?:(?:צבירה|הפקדה|הפקדות|שכר)\\s*(?:של\\s*)?" + NUM + "(?:\\s*" + UNIT + ")?\\s*)+$");
@@ -52,7 +52,7 @@ const Engine = (() => {
   const PERSON_HEAD = /^(?:([א-ת]{2,})\s+(?:פנסיוני|פיננסים|פיננסי|ביטוחים)\s*:?\s*|([א-ת]{2,})\s*:\s*)/;
   const NOT_PERSON = new Set(["חדש", "חדשה", "פנסיוני", "פיננסים", "פיננסי", "ביטוחים", "ביטוח", "מינוי", "מינויי", "סוכן", "ניוד", "הערה", "הערות",
     "סיכום", "בוצע", "מצב", "נשלח", "תזכורת", "שים", "לב", "היי", "הי", "שלום", "הצטרפות", "טופס", "פרמיה", "הפקדה", "צבירה", "שכר"]);
-  const labeled = body => !new RegExp("שכר\\s*\\d{1,2}(?![\\d.,])(?!\\s*" + UNIT + ")").test(body) && !/\d/.test(body.replace(LABELED(), " "));
+  const labeled = body => !/\d/.test(body.replace(LABELED(), " "));
   const trusted = (deal, lab) => deal.sure && !!deal.company && (deal.action !== "ניוד" || !!deal.from_company) && lab;
 
   const number = t => parseFloat(t.replace(/,/g, ""));
@@ -212,15 +212,20 @@ const Engine = (() => {
         deal.company = headerCompany;
       }
 
-      const bigs = [...body.matchAll(BIG())].map(big);
-      let rest = body.replace(BIG(), " ");
-      const salary = new RegExp("שכר\\s*(" + NUM + ")").exec(rest);
+      let pre = body;
+      for (const [word, field] of [["שכר", "salary"], ["הפקד(?:ה|ות)", "deposit"]]) {
+        const unit = new RegExp(word + "\\s*(?:של\\s*)?(" + NUM + ")\\s*(" + UNIT + ")").exec(pre);
+        if (unit) { deal[field] = big(unit); pre = replaceAll(pre, unit[0], " "); }
+      }
+      const bigs = [...pre.matchAll(BIG())].map(big);
+      let rest = pre.replace(BIG(), " ");
+      const salary = deal.salary === null ? new RegExp("שכר\\s*(" + NUM + ")").exec(rest) : null;
       if (salary) {
         const value = number(salary[1]);
         deal.salary = value < 100 ? value * 1000 : value;
         rest = replaceAll(rest, salary[0], " ");
       }
-      const deposit = new RegExp("הפקד(?:ה|ות)\\s*(?:של\\s*)?(" + NUM + ")|(" + NUM + ")\\s*הפקד(?:ה|ות)").exec(rest);
+      const deposit = deal.deposit === null ? new RegExp("הפקד(?:ה|ות)\\s*(?:של\\s*)?(" + NUM + ")|(" + NUM + ")\\s*הפקד(?:ה|ות)").exec(rest) : null;
       if (deposit) {
         deal.deposit = number(deposit[1] || deposit[2]);
         rest = replaceAll(rest, deposit[0], " ");
