@@ -38,12 +38,22 @@ const Engine = (() => {
   const BIG = () => new RegExp("(" + NUM + ")\\s*(מיליון|מילון|m|M|אלף|א׳|א'|k|K)(?![א-תa-zA-Z])", "g");
   const PLAIN = () => new RegExp("(?<![\\d.,/])(" + NUM + ")(?![\\d/%])", "g");
   const IGNORE = () => new RegExp("(?:זוג|יחיד|בעל|אישה|אורי|הורים)\\s*\\+\\s*\\d+|ל?\\d+\\s*(?:ילדים|בנות|בנים|בגירים|נפשות)|הנחה\\s*\\d+\\s*%|\\d+\\s*%|מס(?:פר)?\\.? סוכן\\s*\\d+|מספר פוליסה\\s*\\d+|שוגר(?:ה)? דיגיטלית|לא שוגר|ללא ביטול(?:ים)?|"
-    + "מצורף [^,.]*|הרשאה לחיוב[^,.]*|מצב(?: טופס)?|טופס הצטרפות|ש״ח|ש\"ח|₪", "g");
+    + "מצורף(?=\\s+(?:ניוד|הצטרפות|מינוי|קרן|פוליס|ביטוח|חיים|בריאות|פנסיה|השתלמות|גמל))|מצורף [^,.]*|"
+    + "ב?דמי ניהול(?:\\s*[-:]?\\s*\\d+(?:\\.\\d+)?%?)+|הרשאה לחיוב[^,.]*|מצב(?: טופס)?|טופס הצטרפות|ש״ח|ש\"ח|₪", "g");
   const ignore = s => s.replace(IGNORE(), " ");
   const MONEY_PRODUCT = "(?:פנסיה|השתלמות|גמל להשקעה|גמל)";
   const ONE_COMPANY = "(?:" + BY_LENGTH.join("|") + ")";
   const FIXED_MONEY = new RegExp("^(?:(?:(?:ניוד|הצטרפות|הפקדה)\\s+)?" + MONEY_PRODUCT + "\\s+" + ONE_COMPANY
     + "|מינוי\\s+" + ONE_COMPANY + "\\s+" + MONEY_PRODUCT + ")(?:\\s+(?:הפקדה|צבירה|שכר)\\s+\\d+(?:\\.\\d+)?)+$");
+  const UNIT = "(?:מיליון|מילון|אלף|א׳|א'|k|K|m|M)(?![א-תa-zA-Z])";
+  const LABELED = () => new RegExp("(?:צבירה|הפקדה|הפקדות|שכר)\\s*(?:של\\s*)?" + NUM + "(?:\\s*" + UNIT + ")?|" + NUM + "(?:\\s*" + UNIT + ")?\\s*(?:צבירה|הפקדה)", "g");
+  const MONEY_ONLY = new RegExp("^\\s*(?:(?:צבירה|הפקדה|הפקדות|שכר)\\s*(?:של\\s*)?" + NUM + "(?:\\s*" + UNIT + ")?\\s*)+$");
+  const MONEY_PART = () => new RegExp("(צבירה|הפקדה|הפקדות|שכר)\\s*(?:של\\s*)?(" + NUM + ")(?:\\s*(" + UNIT + "))?", "g");
+  const PERSON_HEAD = /^(?:([א-ת]{2,})\s+(?:פנסיוני|פיננסים|פיננסי|ביטוחים)\s*:?\s*|([א-ת]{2,})\s*:\s*)/;
+  const NOT_PERSON = new Set(["חדש", "חדשה", "פנסיוני", "פיננסים", "פיננסי", "ביטוחים", "ביטוח", "מינוי", "מינויי", "סוכן", "ניוד", "הערה", "הערות",
+    "סיכום", "בוצע", "מצב", "נשלח", "תזכורת", "שים", "לב", "היי", "הי", "שלום", "הצטרפות", "טופס", "פרמיה", "הפקדה", "צבירה", "שכר"]);
+  const labeled = body => !new RegExp("שכר\\s*\\d{1,2}(?![\\d.,])(?!\\s*" + UNIT + ")").test(body) && !/\d/.test(body.replace(LABELED(), " "));
+  const trusted = (deal, lab) => deal.sure && !!deal.company && (deal.action !== "ניוד" || !!deal.from_company) && lab;
 
   const number = t => parseFloat(t.replace(/,/g, ""));
   const big = m => number(m[1]) * (["מיליון", "מילון", "m", "M"].includes(m[2]) ? 1000000 : 1000);
@@ -79,7 +89,8 @@ const Engine = (() => {
 
   function parse(text, month = null) {
     const deals = [], why = [];
-    let headerCompany = null, pending = null, sticky = null;
+    let headerCompany = null, pending = null, sticky = null, person = null, lastWhy = null;
+    const basis = new Map();
     const last = () => deals[deals.length - 1];
     for (const raw of clauses(text || "")) {
       let clause = raw;
@@ -94,6 +105,14 @@ const Engine = (() => {
       if (/^(?:פנסיוני|פיננסים|פיננסי)\s*:?\s*/.test(clause)) {
         sticky = null; headerCompany = null;
         clause = clause.replace(/^(?:פנסיוני|פיננסים|פיננסי)\s*:?\s*/, "");
+      }
+      const head0 = PERSON_HEAD.exec(clause);
+      if (head0) {
+        const name = head0[1] || head0[2];
+        if (!NOT_PERSON.has(name) && !product(name) && !companies(name).length) {
+          person = name; sticky = null; headerCompany = null;
+          clause = clause.slice(head0[0].length);
+        }
       }
       if (!clause) continue;
 
@@ -111,7 +130,7 @@ const Engine = (() => {
       for (const dash of clause.matchAll(/\s[-–]\s/g)) {
         const head = ignore(clause.slice(0, dash.index)), tail = clause.slice(dash.index + dash[0].length);
         if (product(head) && new RegExp(moneyWord).test(head) && !new RegExp(moneyWord + "|מינוי|ניוד").test(tail)) {
-          remark = remark || strip(words(tail), " -–:.") || null;
+          remark = remark || strip(words(tail.replace(/שוגר(?:ה)? דיגיטלית|לא שוגר/g, " ")), " -–:.") || null;
           clause = clause.slice(0, dash.index);
           break;
         }
@@ -123,6 +142,29 @@ const Engine = (() => {
       const found = companies(body);
 
       if (!prod) {
+        const prev = deals.length ? last() : null;
+        if (prev && !found.length && (FINANCE.has(prev.product) || prev.product === "פנסיה") && MONEY_ONLY.test(body)) {
+          let ok = true;
+          for (const m of body.matchAll(MONEY_PART())) {
+            let value = number(m[2]); const unit = m[3];
+            if (unit) value *= ["מיליון", "מילון", "m", "M"].includes(unit) ? 1000000 : 1000;
+            const field = { "צבירה": "amount", "הפקדה": "deposit", "הפקדות": "deposit", "שכר": "salary" }[m[1]];
+            if (field === "salary" && !unit && value < 100) value *= 1000;
+            if (prev[field] !== null) ok = false;
+            else prev[field] = value;
+          }
+          if (ok && prev.unsure === "לא כתוב סכום, הפקדה או שכר") {
+            prev.money_question = false;
+            if (prev.company) { prev.sure = true; prev.unsure = null; }
+            else prev.unsure = "לא ברור לאיזו חברה";
+          }
+          if (!ok) why.push(raw);
+          else if (lastWhy && lastWhy[1] === prev && trusted(prev, basis.get(prev) || false)) {
+            why.splice(lastWhy[0], 1);
+            lastWhy = null;
+          }
+          continue;
+        }
         if (body.includes("מינוי") && found.length && !/\d/.test(body)) {
           pending = { action: "מינוי סוכן", company: found[0][1] };
         } else if (cancels && deals.length && !last().cancels) {
@@ -145,7 +187,7 @@ const Engine = (() => {
       }
 
       const deal = newDeal(month);
-      deal.product = prod; deal.cancels = cancels; deal.note = remark;
+      deal.product = prod; deal.cancels = cancels; deal.note = remark; deal.person = person;
       if (lien) deal.lien = lien[1];
       if (body.includes("מנהלים")) deal.note = "ביטוח מנהלים";
       const waiting = pending; pending = null;
@@ -227,8 +269,15 @@ const Engine = (() => {
       if (prod === "בריאות + מחלות") { families.delete("בריאות"); families.delete("מחלות קשות"); }
       if (prod === "גמל להשקעה") families.delete("גמל");
       if (families.size > 1 && deal.sure) { deal.sure = false; deal.unsure = "שני מוצרים באותו פריט, לא ברור למי שייך הסכום"; }
-      if (!deal.sure) why.push(raw);
-      else if (isMoney && !FIXED_MONEY.test(words(clause))) why.push(raw);   // the app's own fixed form is trusted
+      lastWhy = null;
+      basis.set(deal, labeled(body));
+      if (!deal.sure) {
+        why.push(raw);
+        if (isMoney) lastWhy = [why.length - 1, deal];
+      } else if (isMoney && !FIXED_MONEY.test(words(clause)) && !trusted(deal, basis.get(deal))) {
+        why.push(raw);   // the app's fixed form, or a clear item with every number labeled, is trusted
+        lastWhy = [why.length - 1, deal];
+      }
       deals.push(deal);
     }
     return { deals, confident: !why.length, why };
