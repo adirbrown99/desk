@@ -46,12 +46,14 @@ const Engine = (() => {
   const FIXED_MONEY = new RegExp("^(?:(?:(?:ניוד|הצטרפות|הפקדה)\\s+)?" + MONEY_PRODUCT + "\\s+" + ONE_COMPANY
     + "|מינוי\\s+" + ONE_COMPANY + "\\s+" + MONEY_PRODUCT + ")(?:\\s+(?:הפקדה|צבירה|שכר)\\s+\\d+(?:\\.\\d+)?(?:\\s+(?:מיליון|אלף))?)+$");
   const UNIT = "(?:מיליון|מילון|אלף|א׳|א'|k|K|m|M)(?![א-תa-zA-Z])";
-  const LABELED = () => new RegExp("(?:צבירה|הפקדה|הפקדות|שכר)\\s*(?:של\\s*)?" + NUM + "(?:\\s*" + UNIT + ")?|" + NUM + "(?:\\s*" + UNIT + ")?\\s*(?:צבירה|הפקדה)", "g");
+  const LABELED = () => new RegExp("(?:צבירה(?:\\s+כוללת)?|הפקדה|הפקדות|שכר)\\s*(?:של\\s*)?" + NUM + "(?:\\s*" + UNIT + ")?|" + NUM + "(?:\\s*" + UNIT + ")?\\s*(?:צבירה|הפקדה)", "g");
   const MONEY_ONLY = new RegExp("^\\s*(?:(?:צבירה|הפקדה|הפקדות|שכר)\\s*(?:של\\s*)?" + NUM + "(?:\\s*" + UNIT + ")?\\s*)+$");
   const MONEY_PART = () => new RegExp("(צבירה|הפקדה|הפקדות|שכר)\\s*(?:של\\s*)?(" + NUM + ")(?:\\s*(" + UNIT + "))?", "g");
   const PERSON_HEAD = /^(?:([א-ת]{2,})\s+(?:פנסיוני|פיננסים|פיננסי|ביטוחים)\s*:?\s*|([א-ת]{2,})\s*:\s*)/;
   const NOT_PERSON = new Set(["חדש", "חדשה", "פנסיוני", "פיננסים", "פיננסי", "ביטוחים", "ביטוח", "מינוי", "מינויי", "סוכן", "ניוד", "הערה", "הערות",
     "סיכום", "בוצע", "מצב", "נשלח", "תזכורת", "שים", "לב", "היי", "הי", "שלום", "הצטרפות", "טופס", "פרמיה", "הפקדה", "צבירה", "שכר"]);
+  const moneyWords = body => body.replace(/(?<![א-ת])ו?ה?(?=(?:הפקד|צביר|שכר))/g, "")
+    .replace(/(?<![א-ת])(?:כוללת|כולל|הכוללת|ל(?:פנסיה|השתלמות|גמל|קרן))(?![א-ת])/g, " ");
   const labeled = body => !/\d/.test(body.replace(LABELED(), " "));
   const trusted = (deal, lab) => deal.sure && !!deal.company && (deal.action !== "ניוד" || !!deal.from_company) && lab;
 
@@ -136,6 +138,9 @@ const Engine = (() => {
         }
       }
       let body = ignore(clause);
+      const prev0 = deals.length ? last() : null;
+      if (prev0 && (FINANCE.has(prev0.product) || prev0.product === "פנסיה") && MONEY_ONLY.test(moneyWords(body)) &&
+          [null, prev0.product].includes(product(body)) && !companies(body).length) body = moneyWords(body);
       const prod = product(body);
       const lien = /(?:שעבוד|משועבד)\s+(?:ל|בנק\s+)?([א-ת]+(?:\s+[א-ת]+)?)/.exec(body);
       if (lien) body = replaceAll(body, lien[0], " ");
@@ -167,6 +172,9 @@ const Engine = (() => {
         }
         if (body.includes("מינוי") && found.length && !/\d/.test(body)) {
           pending = { action: "מינוי סוכן", company: found[0][1] };
+        } else if (prev && prev.cancels && found.length === 1 && !/\d/.test(body) &&
+                   new RegExp("^\\s*(?:ו)?" + esc(found[0][0] + found[0][1]) + "\\s+ל[א-ת]+\\s*$").test(body)) {
+          prev.cancels += ", " + words(body);
         } else if (cancels && deals.length && !last().cancels) {
           last().cancels = cancels;
         } else if (lien && deals.length && !last().lien && !/\d/.test(body)) {
@@ -230,7 +238,7 @@ const Engine = (() => {
         deal.deposit = number(deposit[1] || deposit[2]);
         rest = replaceAll(rest, deposit[0], " ");
       }
-      const saved = new RegExp("צבירה\\s*(?:של\\s*)?(" + NUM + ")|(" + NUM + ")\\s*צבירה").exec(rest);
+      const saved = new RegExp("צבירה(?:\\s+כוללת)?\\s*(?:של\\s*)?(" + NUM + ")|(" + NUM + ")\\s*צבירה").exec(rest);
       if (saved) {
         bigs.push(number(saved[1] || saved[2]));
         rest = replaceAll(rest, saved[0], " ");
