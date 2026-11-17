@@ -38,7 +38,7 @@ const Engine = (() => {
   const BIG = () => new RegExp("(" + NUM + ")\\s*(מיליון|מילון|m|M|אלף|א׳|א'|k|K)(?![א-תa-zA-Z])", "g");
   const PLAIN = () => new RegExp("(?<![\\d.,/])(" + NUM + ")(?![\\d/%])", "g");
   const IGNORE = () => new RegExp("(?:זוג|יחיד|בעל|אישה|אורי|הורים)\\s*\\+\\s*\\d+|ל?\\d+\\s*(?:ילדים|בנות|בנים|בגירים|נפשות)|הנחה\\s*\\d+\\s*%|\\d+\\s*%|מס(?:פר)?\\.? סוכן\\s*\\d+|מספר פוליסה\\s*\\d+|שוגר(?:ה)? דיגיטלית|לא שוגר|ללא ביטול(?:ים)?|"
-    + "מצורף(?=\\s+(?:ניוד|הצטרפות|מינוי|קרן|פוליס|ביטוח|חיים|בריאות|פנסיה|השתלמות|גמל))|מצורף [^,.]*|"
+    + "מצורף(?=\\s+(?:טופס|ניוד|הצטרפות|מינוי|קרן|פוליס|ביטוח|חיים|בריאות|פנסיה|השתלמות|גמל))|מצורף [^,.]*|"
     + "ב?דמי ניהול(?:\\s*[-:]?\\s*\\d+(?:\\.\\d+)?%?)+|הרשאה לחיוב[^,.]*|מצב(?: טופס)?|טופס הצטרפות|ש״ח|ש\"ח|₪", "g");
   const ignore = s => s.replace(IGNORE(), " ");
   const MONEY_PRODUCT = "(?:פנסיה|השתלמות|גמל להשקעה|גמל)";
@@ -125,6 +125,7 @@ const Engine = (() => {
         const at = after0.indexOf(" - ");
         const tail = at < 0 ? after0 : after0.slice(0, at), after = at < 0 ? "" : after0.slice(at + 3);
         cancels = strip(words(ignore(tail)), " -–:.") || null;
+        if (cancels) cancels = cancels.replace(new RegExp("^ב(?=" + ONE_COMPANY + ")"), "");
         remark = strip(words(after.replace(/שוגר(?:ה)? דיגיטלית|לא שוגר/g, " ")), " -–:.") || null;
         clause = strip(clause.slice(0, cut.index), " -–:");
       }
@@ -132,7 +133,7 @@ const Engine = (() => {
       for (const dash of clause.matchAll(/\s[-–]\s/g)) {
         const head = ignore(clause.slice(0, dash.index)), tail = clause.slice(dash.index + dash[0].length);
         if (product(head) && new RegExp(moneyWord).test(head) && !new RegExp(moneyWord + "|מינוי|ניוד").test(tail)) {
-          remark = remark || strip(words(tail.replace(/שוגר(?:ה)? דיגיטלית|לא שוגר/g, " ")), " -–:.") || null;
+          remark = remark || strip(words(tail.replace(/שוגר(?:ה)? דיגיטלית|לא שוגר|הנחה\s*\d+\s*%|ללא ביטול(?:ים)?/g, " ")), " -–:.") || null;
           clause = clause.slice(0, dash.index);
           break;
         }
@@ -142,7 +143,7 @@ const Engine = (() => {
       if (prev0 && (FINANCE.has(prev0.product) || prev0.product === "פנסיה") && MONEY_ONLY.test(moneyWords(body)) &&
           [null, prev0.product].includes(product(body)) && !companies(body).length) body = moneyWords(body);
       const prod = product(body);
-      const lien = /(?:שעבוד|משועבד)\s+(?:ל|בנק\s+)?([א-ת]+(?:\s+[א-ת]+)?)/.exec(body);
+      const lien = /(?:שעבוד|משועבד)\s+(?:ל|בנק\s+)?([א-ת״׳"']+(?:\s+[א-ת]+)?)/.exec(body);
       if (lien) body = replaceAll(body, lien[0], " ");
       const found = companies(body);
 
@@ -177,6 +178,7 @@ const Engine = (() => {
           prev.cancels += ", " + words(body);
         } else if (cancels && deals.length && !last().cancels) {
           last().cancels = cancels;
+          if (lien && !last().lien) last().lien = lien[1];
         } else if (lien && deals.length && !last().lien && !/\d/.test(body)) {
           last().lien = lien[1];
         } else if (/\d/.test(body) && (found.length || body.includes("פרמיה")) && deals.length && last().premium === null &&
