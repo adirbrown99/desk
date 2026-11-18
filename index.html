@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Sales Desk">
+<meta name="apple-mobile-web-app-title" content="Clarus">
 <meta name="theme-color" content="#12342b">
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="favicon.png">
-<title>Sales Desk</title>
+<title>Clarus</title>
 <style>
 :root {
   /* The original look, in the dark: deep forest green underneath (green, not black), warm cream text, glowing emerald
@@ -144,7 +144,7 @@ nav button.on { background: var(--fill); color: var(--gold-light); }
 .box.j { border-color: var(--emerald); } .box.a { border-color: var(--gold); } .box.t { border-color: var(--plum); }
 .close { border: 0; background: rgba(255,255,255,.08); width: 34px; height: 34px; border-radius: 50%; font-size: 16px; color: var(--muted); }
 .login { max-width: 340px; margin: 16vh auto 0; text-align: center; }
-.login .logo { width: 72px; height: 72px; border-radius: 20px; margin: 0 auto 16px; background: linear-gradient(135deg, #0d5c48, #1a8a6b); display: grid; place-items: center; color: var(--gold-light); font-size: 34px; }
+.login .logo { display: block; width: 72px; height: 72px; border-radius: 20px; margin: 0 auto 16px; box-shadow: 0 8px 24px rgba(0,0,0,.35); background: linear-gradient(135deg, #0d5c48, #1a8a6b); display: grid; place-items: center; color: var(--gold-light); font-size: 34px; }
 .login input[type=password] { width: 100%; font: inherit; font-size: 18px; text-align: center; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); margin: 16px 0 10px; direction: ltr; }
 .login #face { margin-bottom: 12px; }
 .login button { width: 100%; border: 0; font: inherit; font-weight: 700; font-size: 17px; padding: 14px; border-radius: 14px; background: var(--fill); color: var(--gold-light); }
@@ -157,8 +157,8 @@ nav button.on { background: var(--fill); color: var(--gold-light); }
 </head>
 <body>
 <div id="login" class="login" hidden>
-  <div class="logo">↗</div>
-  <h1>Sales Desk</h1>
+  <img class="logo" src="icon-192.png" alt="Clarus" width="72" height="72">
+  <h1>Clarus</h1>
   <p class="sub">הנתונים מוצפנים. הסיסמה נשארת במכשיר הזה.</p>
   <button id="face" hidden>כניסה עם Face ID</button>
   <input id="pass" type="password" autocomplete="current-password" aria-label="סיסמה">
@@ -199,7 +199,7 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
-const PAGE = "9d2b49";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "1cee46";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -249,8 +249,8 @@ async function enableFace() {
   try {
     if (facePending) { await lockWithFace(facePending, await prfSecret(facePending)); }
     else {
-      const cred = await navigator.credentials.create({ publicKey: { challenge: rand(32), rp: { name: "Sales Desk", id: location.hostname },
-        user: { id: rand(16), name: "Sales Desk", displayName: "Sales Desk" },
+      const cred = await navigator.credentials.create({ publicKey: { challenge: rand(32), rp: { name: "Clarus", id: location.hostname },
+        user: { id: rand(16), name: "Clarus", displayName: "Clarus" },
         pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
         authenticatorSelection: { authenticatorAttachment: "platform", residentKey: "required", userVerification: "required" },
         extensions: { prf: { eval: { first: PRF_SALT } } } } });
