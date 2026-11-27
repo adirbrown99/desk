@@ -160,7 +160,7 @@ tr.on td { color: var(--emerald); font-weight: 700; }
 .sw { display: inline-flex; background: rgba(255,255,255,.08); border-radius: 999px; padding: 2px; }
 .sw button { border: 0; font: inherit; font-size: 12.5px; font-weight: 700; padding: 5px 13px; border-radius: 999px; background: none; color: var(--muted); } .sw button.on { background: var(--violet, #7b6cf6); color: #fff; }
 .donutrow { display: flex; align-items: center; gap: 14px; margin: 10px 0 8px; direction: ltr; }
-.donut { width: 108px; height: 108px; flex: none; position: relative; } .donut b { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-size: 26px; font-weight: 800; line-height: 1; }
+.donut { width: 108px; height: 108px; flex: none; position: relative; } .donut b { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 26px; font-weight: 800; line-height: 1; }
 .donut b small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 2px; }
 .leg { flex: 1; direction: rtl; } .leg div { display: flex; align-items: center; gap: 6px; padding: 5px 0; font-size: 12.5px; white-space: nowrap; } .leg i, .dotc { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; } .leg b { margin-right: auto; }
 .pbar { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 13.5px; } .pbar span:first-child { width: 64px; } .pbar em { flex: 1; height: 6px; border-radius: 99px; background: rgba(255,255,255,.07); position: relative; overflow: hidden; }
@@ -253,7 +253,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "17e3f6";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "bae31c";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -409,8 +409,9 @@ function dealLine(r, withClient) {
     <span class="what">${withClient ? `<b>${esc(r.client)}</b> · ` : ""}${esc([r.product || "לא כתוב", company(r)].filter(Boolean).join(" · "))}</span>
     ${question(r) ? '<span class="tag w">בירור</span>' : ""}<span class="amt num">${esc(amount(r))}</span></div>`;
 }
-const nifraim = c => `<div class="card dark"><div><div class="ttl">הנפרעים שלי</div><div class="v num">${money(c.trailingMonthly)}</div></div>
-  <div class="delta num">${c.trailingNew >= 0 ? "↗ +" : "↘ "}${money(c.trailingNew)}</div></div>`;
+// Same as the Mac's card: the big figure is the NEW trailing commission of the month; the small chip is the total trailing (the whole book).
+const nifraim = c => `<div class="card dark"><div><div class="ttl">הנפרעים שלי</div><div class="v num">${money(c.trailingNew)}</div><div class="sub" style="color:rgba(255,255,255,.7);font-size:12px;margin-top:2px">נפרעים חדשים החודש</div></div>
+  <div class="delta num"><div style="font-size:11px;font-weight:500;opacity:.75">סה״כ נפרעים</div>${money(c.trailingMonthly)}</div></div>`;
 
 // ---------- screens
 function breakdown(title, items) {
