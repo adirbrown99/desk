@@ -156,13 +156,14 @@ tr.on td { color: var(--emerald); font-weight: 700; }
 .hero .fig.big { grid-column: 1 / -1; border: 0; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,.16); margin-bottom: 4px; }
 .hero .fig .t { font-size: 13px; font-weight: 600; opacity: .8; } .hero .fig .v { font-size: 21px; font-weight: 800; letter-spacing: -.5px; white-space: nowrap; } .hero .fig.big .v { font-size: 36px; }
 .hero .fig .s { font-size: 11.5px; opacity: .72; }
-.hero svg.trend { width: 100%; height: 56px; margin-top: 2px; direction: ltr; display: block; }
+.hero svg.trend { width: 100%; height: auto; margin-top: 4px; direction: ltr; display: block; }
+.hero .tl { display: grid; direction: ltr; margin-top: 2px; font-size: 11.5px; color: rgba(255,255,255,.66); text-align: center; } .hero .tl .on { color: #fff; font-weight: 800; }
 .sw { display: inline-flex; background: rgba(255,255,255,.08); border-radius: 999px; padding: 2px; }
 .sw button { border: 0; font: inherit; font-size: 12.5px; font-weight: 700; padding: 5px 13px; border-radius: 999px; background: none; color: var(--muted); } .sw button.on { background: var(--violet, #7b6cf6); color: #fff; }
 .donutrow { display: flex; align-items: center; gap: 14px; margin: 10px 0 8px; direction: ltr; }
-.donut { width: 108px; height: 108px; flex: none; position: relative; } .donut b { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 26px; font-weight: 800; line-height: 1; }
+.donut { width: 116px; height: 116px; flex: none; position: relative; } .donut b { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 26px; font-weight: 800; line-height: 1; }
 .donut b small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 2px; }
-.leg { flex: 1; direction: rtl; } .leg div { display: flex; align-items: center; gap: 6px; padding: 5px 0; font-size: 12.5px; white-space: nowrap; } .leg i, .dotc { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; } .leg b { margin-right: auto; }
+.leg { flex: 1; direction: rtl; } .leg div { display: flex; align-items: center; gap: 8px; padding: 9px 0; font-size: 15px; white-space: nowrap; } .leg div + div { border-top: 1px solid rgba(255,255,255,.08); } .leg b { font-size: 17px; } .leg i, .dotc { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; } .leg b { margin-right: auto; }
 .pbar { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 13.5px; } .pbar span:first-child { width: 64px; } .pbar em { flex: 1; height: 6px; border-radius: 99px; background: rgba(255,255,255,.07); position: relative; overflow: hidden; }
 .pbar em i { position: absolute; inset: 0 auto 0 0; background: rgba(244,169,138,.85); border-radius: 99px; }
 .hh { display: flex; align-items: baseline; gap: 8px; margin: 14px 2px 8px; } .hh h2 { margin: 0; font-size: 18px; font-weight: 800; color: var(--deep); } .hh span { color: var(--gold); font-weight: 700; font-size: 14px; }
@@ -174,6 +175,16 @@ tr.on td { color: var(--emerald); font-weight: 700; }
 .av { width: 32px; height: 32px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--gold-light); background: linear-gradient(135deg, #4b3fc4, #7b6cf6); }
 .av.lg { width: 40px; height: 40px; font-size: 14px; }
 .seg { display: flex; background: rgba(255,255,255,.08); border-radius: 12px; padding: 3px; margin: 0 0 12px; } .seg button { flex: 1; border: 0; font: inherit; font-weight: 700; font-size: 14px; padding: 8px 4px; border-radius: 9px; background: none; color: var(--muted); } .seg button.on { background: #6ee7b7; color: #0b2a1f; }
+.fig.tap { cursor: pointer; } .fig.tap:active { opacity: .7; }
+.pbox { position: relative; background: rgba(255,255,255,.07); border-radius: 14px; padding: 11px 12px 11px 12px; margin-bottom: 9px; border-right: 4px solid #8a8aa8; }
+.pbox.j { border-right-color: #6ee7b7; } .pbox.a { border-right-color: #f4a98a; } .pbox.t { border-right-color: #8ab4ff; }
+.pbox .pl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.st { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(123,108,246,.25); color: #d9d4ff; }
+.st.ISSUED, .st.APPT_DONE { background: rgba(110,231,183,.18); color: #6ee7b7; } .st.MISSING, .st.AWAIT_SIGN { background: rgba(244,169,138,.22); color: #fac8b0; }
+.st.PROCESS, .st.UNDERWRITING { background: rgba(138,180,255,.2); color: #8ab4ff; } .st.CONFLICT { background: rgba(239,68,68,.22); color: #ff9a9a; } .st.UNKNOWN { background: rgba(255,255,255,.08); color: var(--muted); }
+.polink { display: inline-block; margin-top: 7px; font-size: 13px; font-weight: 700; color: var(--gold-light); text-decoration: none; background: rgba(244,169,138,.14); padding: 5px 11px; border-radius: 999px; }
+.ministats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; } .ministats .card { margin: 0; }
+.sheet h4 { margin: 14px 2px 6px; font-size: 15px; color: var(--deep); }
 nav {
   position: fixed; inset: auto 12px calc(env(safe-area-inset-bottom) + 12px); display: flex; gap: 2px; padding: 5px;
   background: rgba(27,26,58,.88); border: 1px solid var(--glass-edge); border-radius: 22px; backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
@@ -253,7 +264,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "bae31c";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "8c3327";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -448,17 +459,20 @@ function areasOf(rows) {
     pensionDeposit: pen.filter(r => r.action !== "מינוי סוכן").reduce((t, r) => t + dep(r), 0) };
 }
 function trendSvg(ms, cur, bestP) {
-  const list = ms.slice(-8), W = 320, H = 70, max = Math.max(bestP, 1) * 1.25, step = list.length > 1 ? (W - 30) / (list.length - 1) : 0;
-  const pts = list.map((m, i) => [15 + i * step, H - 14 - (m.premium / max) * (H - 28)]);
+  const list = ms.slice(-8), n = list.length, W = 320, H = 62, max = Math.max(bestP, 1) * 1.2;
+  const pts = list.map((m, i) => [(i + .5) * W / n, H - 8 - (m.premium / max) * (H - 18)]);
   const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
-  return `<svg class="trend" viewBox="0 0 ${W} ${H + 8}" preserveAspectRatio="none"><defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fac8b0" stop-opacity=".38"/><stop offset="1" stop-color="#fac8b0" stop-opacity="0"/></linearGradient></defs>
-    <path d="${d} L${pts[pts.length - 1][0]} ${H} L${pts[0][0]} ${H} Z" fill="url(#tg)"/><path d="${d}" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-    ${list.map((m, i) => `<circle cx="${pts[i][0]}" cy="${pts[i][1]}" r="${m.month === cur ? 4.5 : 2.6}" fill="${m.month === cur ? "#fac8b0" : "rgba(255,255,255,.75)"}"/><text x="${pts[i][0]}" y="${H + 7}" font-size="8.5" text-anchor="middle" fill="rgba(255,255,255,${m.month === cur ? 1 : .6})">${shortMonth(m.month)}</text>`).join("")}</svg>`;
+  return `<svg class="trend" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fac8b0" stop-opacity=".38"/><stop offset="1" stop-color="#fac8b0" stop-opacity="0"/></linearGradient></defs>
+    <path d="${d} L${pts[n - 1][0].toFixed(1)} ${H} L${pts[0][0].toFixed(1)} ${H} Z" fill="url(#tg)"/><path d="${d}" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${list.map((m, i) => `<circle cx="${pts[i][0].toFixed(1)}" cy="${pts[i][1].toFixed(1)}" r="${m.month === cur ? 4.2 : 2.6}" fill="${m.month === cur ? "#fac8b0" : "rgba(255,255,255,.8)"}"/>`).join("")}</svg>
+    <div class="tl" style="grid-template-columns:repeat(${n},1fr)">${list.map(m => `<span class="${m.month === cur ? "on" : ""}">${shortMonth(m.month)}</span>`).join("")}</div>`;
 }
-function donutSvg(frac, color, rest) {
-  const R = 50, C = 2 * Math.PI * R, on = Math.max(0, Math.min(1, frac)) * C;
-  return `<svg viewBox="0 0 120 120" width="108" height="108"><circle cx="60" cy="60" r="${R}" fill="none" stroke="${rest}" stroke-width="13"/>
-    ${on > 0 ? `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${color}" stroke-width="13" stroke-linecap="round" stroke-dasharray="${on} ${C}" transform="rotate(-90 60 60)"/>` : ""}</svg>`;
+function donutSvg(frac, color, rest, label) {
+  const R = 48, C = 2 * Math.PI * R, on = Math.max(0, Math.min(1, frac)) * C;
+  return `<svg viewBox="0 0 120 120" width="116" height="116" style="display:block"><circle cx="60" cy="60" r="${R}" fill="none" stroke="${rest}" stroke-width="12"/>
+    ${on > 0 ? `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${on} ${C}" transform="rotate(-90 60 60)"/>` : ""}
+    <text x="60" y="63" text-anchor="middle" dominant-baseline="central" font-size="27" font-weight="800" fill="#f5f3ff" style="font-family:inherit">${label}</text>
+    <text x="60" y="84" text-anchor="middle" font-size="11" fill="#b9b5d6" style="font-family:inherit">הופקו</text></svg>`;
 }
 function waitingCard() {
   const n = opsList().filter(e => e.cat === "mine" || e.cat === "sign").length;
@@ -476,7 +490,7 @@ function prodData() {
 function prodCard() {
   const d = prodData();
   return `<button class="glass tap" data-prodsheet="1" style="display:block;width:100%;text-align:right;font:inherit;color:var(--ink)"><div class="row"><b style="font-size:17px;color:var(--deep)">מצב הפקות</b><span class="small">‹</span></div>
-    <div class="donutrow"><div class="donut">${donutSvg(d.pct, "#6ee7b7", "rgba(244,169,138,.85)")}<b class="num">${Math.round(d.pct * 100)}%<small>הופקו</small></b></div>
+    <div class="donutrow"><div class="donut">${donutSvg(d.pct, "#6ee7b7", "rgba(244,169,138,.85)", Math.round(d.pct * 100) + "%")}</div>
       <div class="leg"><div><i style="background:#6ee7b7"></i>הופק<b class="num">${money(d.sum(d.done))}</b></div><div><i style="background:#f4a98a"></i>לא הופק<b class="num">${money(d.sum(d.open))}</b></div></div></div></button>`;
 }
 let prodWhich = "open";
@@ -484,7 +498,7 @@ function prodSheet() {
   const d = prodData(), rows = prodWhich === "done" ? d.done : d.open;
   $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:10px"><div class="name" style="font-size:19px">מצב הפקות · ${monthName(month)}</div><button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
     <div class="seg"><button data-prodfin="0" class="${homeFin ? "" : "on"}">ביטוח</button><button data-prodfin="1" class="${homeFin ? "on" : ""}">פיננסים</button></div>
-    <div class="seg"><button data-prodwhich="done" class="${prodWhich === "done" ? "on" : ""}">הופק <span class="num">${d.done.length}</span> · ${money(d.sum(d.done))}</button><button data-prodwhich="open" class="${prodWhich === "open" ? "on" : ""}">לא הופק <span class="num">${d.open.length}</span> · ${money(d.sum(d.open))}</button></div>
+    <div class="seg"><button data-prodwhich="done" class="${prodWhich === "done" ? "on" : ""}">הופק · ${money(d.sum(d.done))}</button><button data-prodwhich="open" class="${prodWhich === "open" ? "on" : ""}">לא הופק · ${money(d.sum(d.open))}</button></div>
     ${rows.map(r => `<button class="opsl" style="width:100%;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:right;display:flex;justify-content:space-between;align-items:center" data-client="${esc(r.clientId)}">
       <span><b style="color:var(--deep)">${esc(r.client)}</b><br><span class="small">${esc([r.product, r.company].filter(Boolean).join(" · "))}</span></span><b class="num">${money(d.val(r))}</b></button>`).join("") || '<div class="small" style="padding:8px 2px">אין</div>'}`;
   $("sheet").hidden = false;
@@ -498,9 +512,9 @@ function home() {
   const hero = `<div class="hero"><h3>מצב החודש · ${monthName(month)}</h3>
     <div class="tip">${isBest ? "זה החודש הכי חזק שלך עד היום. ממשיכים!" : `עוד ${money(gap)} ואתה בשיא החודשים שלך`}</div>
     ${d != null ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${d != null ? `<span class="delta2" style="color:${d >= 0 ? "var(--mint)" : "var(--gold-light)"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d)}% ${d >= 0 ? "מעל" : "מתחת"} החודש הקודם</span>` : ""}</div>` : ""}
-    <div class="figs"><div class="fig big"><div class="t">פרמיה שנמכרה</div><div class="v num">${money(m.premium)}</div><div class="s num">מינויים ${money(A.appointmentPremium)}</div></div>
-      <div class="fig"><div class="t">גיוסים</div><div class="v num">${money(A.financeRaised)}</div><div class="s num">ניודים · מינויים ${money(A.financeAppointed)}</div></div>
-      <div class="fig"><div class="t">פנסיות</div><div class="v num">${money(A.pensionDeposit)}</div><div class="s">הפקדות חודשיות</div></div></div>
+    <div class="figs"><div class="fig big tap" data-figure="premium"><div class="t">פרמיה שנמכרה</div><div class="v num">${money(m.premium)}</div><div class="s num">מינויים ${money(A.appointmentPremium)}</div></div>
+      <div class="fig tap" data-figure="finance"><div class="t">גיוסים</div><div class="v num">${money(A.financeRaised)}</div><div class="s num">ניודים · מינויים ${money(A.financeAppointed)}</div></div>
+      <div class="fig tap" data-figure="pension"><div class="t">פנסיות</div><div class="v num">${money(A.pensionDeposit)}</div><div class="s">הפקדות חודשיות</div></div></div>
     ${trendSvg(state.months, month, ins.bestPremium)}</div>`;
   return hero + prodCard() + `<div class="hh"><h2>לקוחות החודש</h2><span class="num">${clients.length}</span></div>${clients.map(clientCard).join("")}`;
 }
@@ -646,46 +660,98 @@ function filesLink(rel) {
   const base = "/private/var/mobile/Library/Mobile Documents/com~apple~CloudDocs/Desktop/";
   return "shareddocuments://" + (base + rel).split("/").map(encodeURIComponent).join("/");
 }
-function clientSheet(id, withComm) {
-  const c = state.clients.find(x => x.id === id), rows = state.rows.filter(r => r.clientId === id);
-  const premium = rows.filter(r => r.action === "הצטרפות").reduce((s, r) => s + (r.premium || 0), 0);
-  const scope = rows.reduce((s, r) => s + (r.commission.scope || 0), 0), trailing = rows.reduce((s, r) => s + (r.commission.trailing || 0), 0);
-  const initials = c.name.split(" ").slice(0, 2).map(w => w[0]).join("");
-  $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:12px"><div class="row" style="justify-content:flex-start;gap:12px">
-      <div class="avatar">${esc(initials)}</div><div><div class="name" style="font-size:19px">${esc(c.name)}</div><div class="small">${esc(lead(c))} · ${monthName(c.month)}</div></div></div>
-      <button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
-    <div class="chips" style="margin:0 0 10px;padding:0"><span class="tag">${rows.length} מוצרים</span>
-      ${premium ? `<span class="tag num" style="color:var(--emerald)">פרמיה ${money(premium)}</span>` : ""}
-      ${withComm ? `<span class="tag num" style="color:var(--gold)">היקף ${cmoney(scope)}</span><span class="tag num" style="color:var(--gold)">נפרעים ${cmoney(trailing)}</span>` : ""}
-      ${c.sheetPending ? '<span class="tag p">לא בגיליון</span>' : ""}<span class="tag">${c.hasFolder ? c.pdfCount + " מסמכים" : "אין תיקייה"}</span></div>
-    ${(() => { const e = opsList().find(x => x.clientId === id); return e ? `<div class="box"><div class="row"><b style="color:var(--deep)">מצב בתפעול</b><span class="pill ${e.cat}">${CATS[e.cat] || ""}</span></div>${opsLines(e)}</div>` : ""; })()}
-    ${c.folderRel ? `<a class="folder" href="${esc(filesLink(c.folderRel))}">📁 פתיחת התיקייה בקבצים</a>` : ""}
-    ${rows.map(r => `<div class="box ${cls(r.action)}"><div class="row"><span><b style="color:var(--deep)">${esc(r.product || "מוצר לא כתוב")}</b>
-        <span class="${cls(r.action)}" style="font-weight:600"> ${esc(r.action)}</span></span><span class="amt num">${esc(amount(r))}</span></div>
-      <div class="small" style="font-size:13.5px">${esc([company(r), r.person].filter(Boolean).join(" · "))}</div>
-      ${[r.cancels && "ביטול: " + r.cancels, r.lien && "שעבוד: " + r.lien, r.premium != null || r.deposit != null ? r.amount != null && "צבירה: " + money(r.amount) : null, r.note,
-         withComm && r.commission.assumed].filter(Boolean).map(n => `<div class="small">${esc(n)}</div>`).join("")}
-      ${withComm ? `<div class="comm2 num">${r.commission.missing ? esc(r.commission.missing) : "היקף " + cmoney(r.commission.scope) + " · נפרעים " + cmoney(r.commission.trailing)}</div>` : ""}
-      ${question(r) ? `<div class="small" style="color:var(--orange)">לא ודאי: ${esc(question(r))}</div>` : ""}</div>`).join("") || '<div class="small">ללא מכירה</div>'}
-    ${c.audit.map(a => `<div class="box"><div class="small" style="color:var(--orange)">לבדיקה: ${esc(a)}</div></div>`).join("")}
-    ${c.followup ? `<div class="small" style="margin-top:8px">🔔 ${esc(c.followup)}</div>` : ""}`;
+const fmtDate = d => { const p = String(d || "").slice(0, 10).split("-"); return p.length === 3 ? `${p[2]}.${p[1]}.${p[0]}` : ""; };
+const sumsBy = (rows, key, val) => { const o = {}; rows.forEach(r => { const k = key(r) || "לא כתוב", v = val(r) || 0; if (v > 0) o[k] = (o[k] || 0) + v; }); return fold(o); };
+const mini = (t, v, lines) => `<div class="card"><div class="label">${t}</div><div class="mid num">${v}</div>${(lines || []).map(l => `<div class="small">${l}</div>`).join("")}</div>`;
+const listRows = (items) => items.map(it => `<button class="opsl" style="width:100%;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:right;display:flex;justify-content:space-between;align-items:center" data-client="${esc(it.clientId)}">
+  <span><b style="color:var(--deep)">${esc(it.client)}</b><br><span class="small">${esc(it.sub || "")}</span></span><b class="num">${it.val}</b></button>`).join("") || '<div class="small" style="padding:6px 2px">אין בחודש הזה</div>';
+// Tapping a figure on the home hero opens its detail, as on the Mac: the month's totals, the breakdowns and the list of clients.
+function figureSheet(kind) {
+  const A = areasOf(state.rows.filter(r => r.month === month && !r.test));
+  const fam = r => ["בריאות", "מחלות קשות", "בריאות + מחלות"].includes(r.product) ? "בריאות" : r.product;
+  let title, body;
+  if (kind === "premium") {
+    const sales = A.ins.filter(r => r.action === "הצטרפות"), done = sales.filter(r => r.issued === true), open = sales.filter(r => r.issued !== true);
+    const sp = l => l.reduce((t, r) => t + (r.premium || 0), 0), apps = A.ins.filter(r => r.action === "מינוי סוכן");
+    title = "פרמיה חודשית";
+    body = `<div class="ministats">${mini("סך פרמיה", money(sp(sales)), [`הופק ${money(sp(done))}`, `לא הופק ${money(sp(open))}`])}${mini("סך פרמיית מינויים", money(A.appointmentPremium), [apps.length + " מינויים"])}${mini("מוצרים", A.ins.length)}</div>
+      ${breakdown("פרמיה לפי מוצר", premiumBy(A.ins, fam))}${breakdown("פרמיה לפי חברה", premiumBy(A.ins.filter(r => r.company), r => r.company))}`;
+  } else if (kind === "finance") {
+    const raise = A.fin.filter(r => r.action !== "מינוי סוכן"), apps = A.fin.filter(r => r.action === "מינוי סוכן");
+    title = "פיננסים";
+    body = `<div class="ministats">${mini("גויס (ניודים)", money(A.financeRaised))}${mini("מינויי פיננסים", money(A.financeAppointed))}</div>
+      ${breakdown("גיוס לפי חברה", sumsBy(raise, r => r.company, r => r.amount))}${breakdown("גיוס לפי מוצר", sumsBy(raise, r => r.product, r => r.amount))}
+      <h4>מינויי פיננסים שבוצעו</h4><div class="card">${listRows(apps.map(r => ({ clientId: r.clientId, client: r.client, sub: [r.product, r.company].filter(Boolean).join(" · "), val: money(r.amount) })))}</div>`;
+  } else {
+    const dep = r => r.deposit != null ? r.deposit : r.salary != null ? r.salary * 0.185 : 0, ps = A.pen.filter(r => r.action !== "מינוי סוכן");
+    title = "פנסיה";
+    body = `<div class="ministats">${mini("הפקדות חודשיות מגיוסים וניודים", money(A.pensionDeposit))}${mini("לקוחות", new Set(ps.map(r => r.clientId)).size)}</div>
+      ${breakdown("הפקדה חודשית לפי חברה", sumsBy(ps, r => r.company, dep))}
+      <h4>הפקדות</h4><div class="card">${listRows(ps.map(r => ({ clientId: r.clientId, client: r.client, sub: [r.company, r.deposit == null && r.salary != null ? "משוער משכר" : ""].filter(Boolean).join(" · "), val: money(dep(r)) })))}</div>`;
+  }
+  $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:10px"><div class="name" style="font-size:19px">${title} <span class="small">${monthName(month)}</span></div><button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>${body}`;
   $("sheet").hidden = false;
 }
 
+// The client card, as on the Mac: a header (name, source and month, the folder), "summary" (the products with policy, state and next step) and "details".
+let sheetClient = null, clientTab = "summary";
+const openClient = (id, comm) => { clientTab = "summary"; return clientSheet(id, comm); };
+function productBox(r, withComm) {
+  const d = r.deal, issued = r.issued === true || (d && d.stage === "ISSUED");
+  const notes = [r.cancels && "ביטול: " + r.cancels, r.lien && "שעבוד: " + r.lien, r.note, ...(r.info || [])].filter(Boolean);
+  const pol = r.policy ? `<div class="small">פוליסה ${esc(r.policy)}${issued ? " · הופקה" + (r.issuedAt ? " " + fmtDate(r.issuedAt) : "") : ""}${r.policyPremium != null && r.premium != null && Math.round(r.policyPremium) !== Math.round(r.premium) ? ` · פרמיה בפוליסה ${money(r.policyPremium)} מול ${money(r.premium)} בדוח` : ""}</div>` : "";
+  return `<div class="pbox ${cls(r.action)}" data-deal="${esc(r.id)}"><div class="row"><span><b style="color:var(--deep);font-size:16px">${esc(r.product || "מוצר לא כתוב")}</b>
+      <span class="${cls(r.action)}" style="font-weight:600"> ${esc(r.action)}</span></span><span class="amt num">${esc(amount(r))}</span></div>
+    <div class="small" style="font-size:13.5px">${esc([company(r), r.person].filter(Boolean).join(" · "))}</div>${pol}
+    ${d ? `<div class="pl"><span class="st ${d.stage}">${esc(d.label || "")}</span>${d.days && !issued ? `<span class="small">${d.days} ימים בשלב</span>` : ""}${d.verified === false ? '<span class="small" style="color:var(--orange)">לא אומת</span>' : ""}</div>
+      ${d.waitingFor ? `<div class="small">ממתין ל: ${esc(d.waitingFor)}</div>` : ""}${d.next ? `<div class="small" style="color:var(--deep);font-weight:600">הפעולה הבאה: ${esc(d.next)}</div>` : ""}${d.check ? `<div class="small" style="color:var(--orange)">לבדיקה: ${esc(d.check)}</div>` : ""}` : ""}
+    ${withComm ? `<div class="comm2 num">${r.commission.missing ? esc(r.commission.missing) : "היקף " + cmoney(r.commission.scope) + " · נפרעים " + cmoney(r.commission.trailing)}</div>` : ""}
+    ${notes.map(n => `<div class="small">${esc(n)}</div>`).join("")}${question(r) ? `<div class="small" style="color:var(--orange)">לא ודאי: ${esc(question(r))}</div>` : ""}
+    ${r.policyRel ? `<a class="polink" href="${esc(filesLink(r.policyRel))}" onclick="event.stopPropagation()">📄 פתיחת הפוליסה</a>` : ""}</div>`;
+}
+function clientSheet(id, withComm) {
+  sheetClient = { id, withComm: !!withComm };
+  const c = state.clients.find(x => x.id === id), rows = state.rows.filter(r => r.clientId === id);
+  const premium = rows.filter(r => r.action === "הצטרפות").reduce((s, r) => s + (r.premium || 0), 0);
+  const scope = rows.reduce((s, r) => s + (r.commission.scope || 0), 0), trailing = rows.reduce((s, r) => s + (r.commission.trailing || 0), 0);
+  const e = opsList().find(x => x.clientId === id), line = (k, v) => v == null || v === "" ? "" : `<div class="row" style="padding:7px 0;border-bottom:1px solid var(--line)"><span class="small">${k}</span><b>${esc(String(v))}</b></div>`;
+  const summary = `<div class="chips" style="margin:0 0 10px;padding:0"><span class="tag">${rows.length} מוצרים</span>
+      ${premium ? `<span class="tag num" style="color:var(--emerald)">פרמיה ${money(premium)}</span>` : ""}
+      ${withComm ? `<span class="tag num" style="color:var(--gold)">היקף ${cmoney(scope)}</span><span class="tag num" style="color:var(--gold)">נפרעים ${cmoney(trailing)}</span>` : ""}
+      ${c.sheetPending ? '<span class="tag p">לא בגיליון</span>' : ""}</div>
+    ${e ? `<div class="box"><div class="row"><b style="color:var(--deep)">מצב בתפעול</b><span class="pill ${e.cat}">${CATS[e.cat] || ""}</span></div>${opsLines(e)}</div>` : ""}
+    ${rows.map(r => productBox(r, withComm)).join("") || '<div class="small">ללא מכירה</div>'}
+    ${(c.audit || []).map(a => `<div class="box"><div class="small" style="color:var(--orange)">לבדיקה: ${esc(a)}</div></div>`).join("")}
+    ${c.followup ? `<div class="small" style="margin-top:8px">🔔 ${esc(c.followup)}</div>` : ""}`;
+  const details = `<div class="card">${line("שם", c.name)}${line("מקור ליד", lead(c))}${line("צורף ללקוחות שלך", c.joinDate ? fmtDate(c.joinDate) : monthName(c.month) + " (תאריך מלא לא נרשם)")}
+      ${line("חודש", monthName(c.month))}${line("מעקב בגיליון", c.followup)}${line("תיקייה", c.hasFolder ? c.pdfCount + " מסמכים" : "אין תיקייה מקושרת")}</div>
+    ${c.folderRel ? `<a class="folder" href="${esc(filesLink(c.folderRel))}">📁 פתיחת התיקייה בקבצים</a>` : ""}`;
+  $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:12px"><div class="row" style="justify-content:flex-start;gap:12px">
+      <div class="avatar">${esc(initials(c.name))}</div><div><div class="name" style="font-size:19px">${esc(c.name)}</div><div class="small">${esc(lead(c))} · ${monthName(c.month)}</div></div></div>
+      <button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
+    <div class="seg"><button data-ctab="summary" class="${clientTab === "summary" ? "on" : ""}">סיכום</button><button data-ctab="details" class="${clientTab === "details" ? "on" : ""}">פרטים</button></div>
+    ${clientTab === "summary" ? summary : details}`;
+  $("sheet").hidden = false;
+}
+
+// A product, opened: everything the Mac's product box shows, with the policy.
 function dealSheet(id, withComm) {
   const r = state.rows.find(x => x.id === id); if (!r) return;
-  const c = state.clients.find(x => x.id === r.clientId) || {};
-  const line = (k, v) => v == null || v === "" ? "" : `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="small">${k}</span><b>${esc(String(v))}</b></div>`;
+  const c = state.clients.find(x => x.id === r.clientId) || {}, d = r.deal;
+  const line = (k, v) => v == null || v === "" ? "" : `<div class="row" style="padding:7px 0;border-bottom:1px solid var(--line)"><span class="small">${k}</span><b>${esc(String(v))}</b></div>`;
   $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:12px"><div><div class="name" style="font-size:19px">${esc(r.product || "מוצר לא כתוב")}
       <span class="${cls(r.action)}"> ${esc(r.action)}</span></div><div class="small">${esc(r.client)} · ${esc(lead(c))} · ${monthName(r.month)}</div></div>
       <button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
-    <div class="card">${line("חברה", r.fromCompany && r.company ? r.fromCompany + " ← " + r.company : r.company)}${line("על שם", r.person)}
-      ${line("פרמיה", r.premium != null ? money(r.premium) : null)}${line("הפקדה", r.deposit != null ? money(r.deposit) : null)}
+    ${d ? `<div class="pl" style="margin-bottom:8px"><span class="st ${d.stage}">${esc(d.label || "")}</span>${d.days && d.stage !== "ISSUED" ? `<span class="small">${d.days} ימים בשלב</span>` : ""}${d.verified === false ? '<span class="small" style="color:var(--orange)">לא אומת</span>' : ""}</div>` : ""}
+    <div class="card">${line("חברה", company(r))}${line("על שם", r.person)}${line("מספר פוליסה", r.policy)}${line("הופקה", r.issuedAt ? fmtDate(r.issuedAt) : (r.issued ? "כן" : ""))}
+      ${line("פרמיה בדוח", r.premium != null ? money(r.premium) : null)}${line("פרמיה בפוליסה", r.policyPremium != null ? money(r.policyPremium) : null)}${line("הפקדה", r.deposit != null ? money(r.deposit) : null)}
       ${line("צבירה", r.amount != null ? money(r.amount) : null)}${line("שכר", r.salary != null ? money(r.salary) : null)}
-      ${line("ביטול", r.cancels)}${line("שעבוד", r.lien)}${line("הערה", r.note)}${question(r) ? line("לא ודאי", question(r)) : ""}
+      ${line("ביטול", r.cancels)}${line("שעבוד", r.lien)}${line("הערה", r.note)}${(r.info || []).map(n => line("הערה", n)).join("")}${question(r) ? line("לא ודאי", question(r)) : ""}
+      ${d && d.waitingFor ? line("ממתין ל", d.waitingFor) : ""}${d && d.next ? line("הפעולה הבאה", d.next) : ""}${d && d.check ? line("לבדיקה", d.check) : ""}
       ${withComm ? line("סוג עמלה", r.commission.label) + (r.commission.missing ? line("עמלה", r.commission.missing)
         : line("היקף", cmoney(r.commission.scope)) + line("נפרעים", cmoney(r.commission.trailing))) + line("הנחה", r.commission.assumed) : ""}</div>
-    <button class="card client" data-client="${esc(r.clientId)}" data-comm-card="${withComm ? 1 : ""}" style="margin-top:4px"><b>לכרטיס הלקוח ←</b></button>`;
+    ${r.policyRel ? `<a class="polink" href="${esc(filesLink(r.policyRel))}">📄 פתיחת הפוליסה</a>` : ""}
+    <button class="card client" data-client="${esc(r.clientId)}" data-comm-card="${withComm ? 1 : ""}" style="margin-top:8px"><b>לכרטיס הלקוח ←</b></button>`;
   $("sheet").hidden = false;
 }
 
@@ -705,33 +771,37 @@ $("nav").addEventListener("click", e => { const t = e.target.dataset.tab; if (t)
 $("view").addEventListener("click", e => {
   const at = sel => e.target.closest(sel);
   let x;
-  if ((x = at("[data-cclient]"))) return clientSheet(x.dataset.cclient, true);
+  if ((x = at("[data-cclient]"))) return openClient(x.dataset.cclient, true);
   if ((x = at("[data-cdeal]"))) return dealSheet(x.dataset.cdeal, true);
   if ((x = at("[data-deal]"))) return dealSheet(x.dataset.deal, false);
   if ((x = at("[data-pick]"))) { month = x.dataset.pick; return render(); }   // the chart only changes the month, like the menu at the top
   if ((x = at("[data-cmonth]"))) { month = x.dataset.cmonth; commView = "month"; render(); return scrollTo(0, 0); }
   if ((x = at("[data-comm]"))) { commView = x.dataset.comm; render(); return scrollTo(0, 0); }
   if ((x = at("[data-prodsheet]"))) return prodSheet();
+  if ((x = at("[data-figure]"))) return figureSheet(x.dataset.figure);
   if ((x = at("[data-opsf]"))) { opsF = x.dataset.opsf; return render(); }
   if ((x = at("[data-opsfam]"))) { opsFam = x.dataset.opsfam; return render(); }
   if ((x = at("[data-goops]"))) { tab = "ops"; opsF = "mine"; render(); return scrollTo(0, 0); }
-  if ((x = at("[data-opsclient]"))) return clientSheet(x.dataset.opsclient, false);
-  if ((x = at("[data-client]"))) return clientSheet(x.dataset.client, false);
+  if ((x = at("[data-opsclient]"))) return openClient(x.dataset.opsclient, false);
+  if ((x = at("[data-client]"))) return openClient(x.dataset.client, false);
 });
 $("search").addEventListener("click", findOpen);
 $("findq").addEventListener("input", findRender);
 $("findq").addEventListener("keydown", e => { if (e.key === "Enter") { const first = $("findResults").querySelector("[data-found]"); if (first) first.click(); } });
 $("find").addEventListener("click", e => {
   const hit = e.target.closest("[data-found]");
-  if (hit) { findClose(); return clientSheet(hit.dataset.found, tab === "comm"); }   // the card as this tab shows it
+  if (hit) { findClose(); return openClient(hit.dataset.found, tab === "comm"); }   // the card as this tab shows it
   if (e.target.id === "find" || e.target.id === "findClose") findClose();
 });
 $("sheet").addEventListener("click", e => {
   const pf = e.target.closest("[data-prodfin]"), pw = e.target.closest("[data-prodwhich]");
   if (pf) { homeFin = pf.dataset.prodfin === "1"; prodSheet(); return render(); }
   if (pw) { prodWhich = pw.dataset.prodwhich; return prodSheet(); }
+  const ct = e.target.closest("[data-ctab]"), pb = e.target.closest("[data-deal]");
+  if (ct) { clientTab = ct.dataset.ctab; return clientSheet(sheetClient.id, sheetClient.withComm); }
+  if (pb && !e.target.closest("a")) return dealSheet(pb.dataset.deal, sheetClient && sheetClient.withComm);
   const card = e.target.closest("[data-client]");
-  if (card) return clientSheet(card.dataset.client, !!card.dataset.commCard);
+  if (card) { clientTab = "summary"; return clientSheet(card.dataset.client, !!card.dataset.commCard); }
   if (e.target.id === "sheet" || e.target.id === "closeSheet") $("sheet").hidden = true;
 });
 $("go").addEventListener("click", () => load($("pass").value));
