@@ -48,10 +48,10 @@ h1 { font-size: 22px; line-height: 1.15; margin: 0; color: var(--deep); font-wei
 .icon:active { transform: scale(.94); }
 .icon.spin svg { animation: spin .9s linear infinite; color: var(--emerald); }
 @keyframes spin { to { transform: rotate(360deg); } }
-.find { position: fixed; inset: 0; z-index: 6; background: rgba(4,16,13,.55); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
-.find .panel { background: rgba(16,44,37,.97); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); padding: calc(env(safe-area-inset-top) + 14px) 16px 14px; border-radius: 0 0 22px 22px; max-height: calc(var(--vh, 100dvh) - 24px); display: flex; flex-direction: column; }
+.find { position: fixed; inset: 0; z-index: 6; background: rgba(8,8,24,.55); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
+.find .panel { background: rgba(27,26,58,.97); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); padding: calc(env(safe-area-inset-top) + 14px) 16px 14px; border-radius: 0 0 22px 22px; max-height: calc(var(--vh, 100dvh) - 24px); display: flex; flex-direction: column; }
 .find .findbar { display: flex; gap: 10px; align-items: center; }
-.find input { flex: 1; min-width: 0; border: 0; font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 14px; background: rgba(27,67,56,.95); color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+.find input { flex: 1; min-width: 0; border: 0; font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 14px; background: rgba(46,43,92,.95); color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,.2); }
 .find .cancel { border: 0; background: none; font: inherit; font-weight: 700; color: var(--emerald); font-size: 16px; padding: 6px 2px; }
 .find .results { overflow-y: auto; margin-top: 12px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .find .results::-webkit-scrollbar { display: none; }
@@ -99,10 +99,10 @@ h2 small { color: var(--muted); font-weight: 500; font-size: 14px; }
 .tap { cursor: pointer; }
 .comm2 { font-size: 13px; color: var(--gold); font-weight: 700; }
 .goldcard { position: relative; overflow: hidden; color: #2a1220; border: 0;
-  background: linear-gradient(135deg, #fac8b0 0%, #f4a98a 40%, #e8907a 75%, #c87868 100%);
+  background: linear-gradient(135deg, #f6e3a1 0%, #e9c870 38%, #c9973a 78%, #a9761c 100%);
   box-shadow: 0 12px 30px rgba(200,146,42,.45), 0 0 0 1px rgba(169,118,28,.35) inset; }
 .goldcard .ttl { font-weight: 700; font-size: 15px; color: rgba(42,28,0,.72); }
-.goldcard .v { font-size: 40px; font-weight: 900; letter-spacing: -.5px; color: #241020; }
+.goldcard .v { font-size: 40px; font-weight: 900; letter-spacing: -.5px; color: #1d1405; }
 .sc { color: var(--gold); font-weight: 800; } .tr { color: var(--emerald); font-weight: 800; }
 .pair { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 15px; }
 .key { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); margin: -4px 0 10px; }
@@ -129,18 +129,63 @@ table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 th { text-align: right; color: var(--muted); font-weight: 600; font-size: 12px; padding: 4px 0 6px; }
 td { padding: 7px 0; border-top: 1px solid var(--line); }
 tr.on td { color: var(--emerald); font-weight: 700; }
+.pill { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.sign { background: rgba(244,169,138,.22); color: var(--gold-light); } .pill.mine { background: rgba(123,108,246,.28); color: #d9d4ff; } .pill.company { background: rgba(138,180,255,.2); color: var(--plum); }
+.strip { display: flex; background: linear-gradient(135deg, #4b3fc4, #7b6cf6); border-radius: 20px; padding: 12px 6px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 10px 26px rgba(123,108,246,.30); }
+.strip button { flex: 1; border: 0; background: none; color: #fff; font: inherit; text-align: center; padding: 2px 4px; border-left: 1px solid rgba(255,255,255,.22); }
+.strip button:last-child { border-left: 0; }
+.strip .n { font-size: 30px; font-weight: 800; line-height: 1.05; display: block; } .strip .t { font-size: 12.5px; opacity: .9; }
+.opsl { display: flex; align-items: baseline; gap: 6px; padding: 5px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+.opsl:first-child { border-top: 0; } .opsl .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--muted); align-self: center; }
+.opsl .dot.open { background: var(--gold); } .opsl .dot.done { background: var(--emerald); }
+.waiting { display: flex; justify-content: space-between; align-items: center; width: 100%; border: 1px solid rgba(123,108,246,.5); background: rgba(123,108,246,.18); color: var(--deep); font: inherit; font-weight: 700; padding: 13px 14px; border-radius: 16px; margin-bottom: 10px; }
+.waiting b { background: var(--fill); color: #fff; padding: 2px 11px; border-radius: 999px; }
+/* ---- the Mac app's look, phone-sized: glass cards with a soft top highlight, a hero with warm and cool glows, avatars, dotted status ---- */
+.glass { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), var(--card); border: 1px solid rgba(255,255,255,.10); border-radius: 18px; padding: 15px; margin-bottom: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
+.hero { position: relative; border-radius: 22px; padding: 14px 14px 8px; margin-bottom: 12px; color: #fff; border: 1px solid rgba(255,255,255,.22);
+  background: radial-gradient(120% 90% at 100% 0%, rgba(244,169,138,.40), transparent 60%), radial-gradient(110% 90% at 0% 100%, rgba(138,180,255,.32), transparent 62%), linear-gradient(135deg, #4b3fc4, #7b6cf6);
+  box-shadow: 0 12px 30px rgba(123,108,246,.42); }
+.hero .top { display: flex; align-items: center; gap: 12px; }
+.hero .ring { width: 58px; height: 58px; flex: none; position: relative; direction: ltr; }
+.hero .ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 15px; font-weight: 800; }
+.hero h3 { margin: 0; font-size: 17px; font-weight: 800; } .hero .tip { font-size: 13px; color: var(--gold-light); font-weight: 600; margin-top: 2px; }
+.hero .delta2 { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14); }
+.hero .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 0; margin-top: 8px; }
+.hero .fig { padding: 4px 8px; } .hero .fig + .fig { border-right: 1px solid rgba(255,255,255,.18); }
+.hero .fig.big { grid-column: 1 / -1; border: 0; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,.16); margin-bottom: 4px; }
+.hero .fig .t { font-size: 13px; font-weight: 600; opacity: .8; } .hero .fig .v { font-size: 21px; font-weight: 800; letter-spacing: -.5px; white-space: nowrap; } .hero .fig.big .v { font-size: 36px; }
+.hero .fig .s { font-size: 11.5px; opacity: .72; }
+.hero svg.trend { width: 100%; height: 56px; margin-top: 2px; direction: ltr; display: block; }
+.sw { display: inline-flex; background: rgba(255,255,255,.08); border-radius: 999px; padding: 2px; }
+.sw button { border: 0; font: inherit; font-size: 12.5px; font-weight: 700; padding: 5px 13px; border-radius: 999px; background: none; color: var(--muted); } .sw button.on { background: var(--violet, #7b6cf6); color: #fff; }
+.donutrow { display: flex; align-items: center; gap: 14px; margin: 10px 0 8px; direction: ltr; }
+.donut { width: 108px; height: 108px; flex: none; position: relative; } .donut b { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-size: 26px; font-weight: 800; line-height: 1; }
+.donut b small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+.leg { flex: 1; direction: rtl; } .leg div { display: flex; align-items: center; gap: 6px; padding: 5px 0; font-size: 12.5px; white-space: nowrap; } .leg i, .dotc { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; } .leg b { margin-right: auto; }
+.pbar { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 13.5px; } .pbar span:first-child { width: 64px; } .pbar em { flex: 1; height: 6px; border-radius: 99px; background: rgba(255,255,255,.07); position: relative; overflow: hidden; }
+.pbar em i { position: absolute; inset: 0 auto 0 0; background: rgba(244,169,138,.85); border-radius: 99px; }
+.hh { display: flex; align-items: baseline; gap: 8px; margin: 14px 2px 8px; } .hh h2 { margin: 0; font-size: 18px; font-weight: 800; color: var(--deep); } .hh span { color: var(--gold); font-weight: 700; font-size: 14px; }
+.cc { display: block; width: 100%; text-align: right; font: inherit; color: var(--ink); padding: 13px; margin-bottom: 10px; border-radius: 16px; border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), var(--card); box-shadow: 0 4px 10px rgba(0,0,0,.18); }
+.cc .h { display: flex; align-items: center; gap: 9px; } .cc .h .nm { font-size: 16px; font-weight: 700; color: var(--deep); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cc .ps { font-size: 12.5px; color: var(--muted); margin: 6px 0 7px; min-height: 16px; }
+.cc .f { display: flex; align-items: center; gap: 6px; font-size: 12.5px; } .cc .f .st { font-weight: 700; } .cc .f .pm { margin-right: auto; font-weight: 700; color: var(--deep); } .cc .f .ago { color: var(--muted); font-size: 11.5px; }
+.av { width: 32px; height: 32px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--gold-light); background: linear-gradient(135deg, #4b3fc4, #7b6cf6); }
+.av.lg { width: 40px; height: 40px; font-size: 14px; }
+.seg { display: flex; background: rgba(255,255,255,.08); border-radius: 12px; padding: 3px; margin: 0 0 12px; } .seg button { flex: 1; border: 0; font: inherit; font-weight: 700; font-size: 14px; padding: 8px 4px; border-radius: 9px; background: none; color: var(--muted); } .seg button.on { background: #6ee7b7; color: #0b2a1f; }
 nav {
   position: fixed; inset: auto 12px calc(env(safe-area-inset-bottom) + 12px); display: flex; gap: 2px; padding: 5px;
-  background: rgba(16,44,37,.88); border: 1px solid var(--glass-edge); border-radius: 22px; backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  background: rgba(27,26,58,.88); border: 1px solid var(--glass-edge); border-radius: 22px; backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
   box-shadow: 0 10px 28px rgba(0,0,0,.18);
 }
 nav button { flex: 1; border: 0; background: none; font: inherit; font-weight: 700; font-size: 13.5px; padding: 11px 2px; border-radius: 17px; color: var(--muted); }
 nav button.on { background: var(--fill); color: var(--gold-light); }
 .folder { display: block; text-align: center; text-decoration: none; font-weight: 700; font-size: 15px; padding: 11px; margin: 0 0 8px; border-radius: 13px; background: var(--fill); color: var(--gold-light); }
-.sheet-bg { position: fixed; inset: 0; background: rgba(4,16,13,.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); z-index: 5; display: flex; align-items: flex-end; }
-.sheet { background: rgba(16,44,37,.98); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); width: 100%; max-height: 86dvh; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 18px 16px calc(env(safe-area-inset-bottom) + 20px); }
+.sheet-bg { position: fixed; inset: 0; background: rgba(8,8,24,.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); z-index: 5; display: flex; align-items: flex-end; }
+.sheet { background: rgba(27,26,58,.98); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); width: 100%; max-height: 86dvh; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 18px 16px calc(env(safe-area-inset-bottom) + 20px); }
 .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #4b3fc4, #7b6cf6); color: var(--gold-light); display: grid; place-items: center; font-weight: 800; flex: none; }
-.box { background: rgba(27,67,56,.9); border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; border-right: 4px solid #999; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
+.box { background: rgba(46,43,92,.9); border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; border-right: 4px solid #999; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
 .box.j { border-color: var(--emerald); } .box.a { border-color: var(--gold); } .box.t { border-color: var(--plum); }
 .close { border: 0; background: rgba(255,255,255,.08); width: 34px; height: 34px; border-radius: 50%; font-size: 16px; color: var(--muted); }
 .login { max-width: 340px; margin: 16vh auto 0; text-align: center; }
@@ -183,7 +228,7 @@ nav button.on { background: var(--fill); color: var(--gold-light); }
   <div class="findbar"><input id="findq" type="search" placeholder="שם, ת״ז או מקור" autocomplete="off" enterkeyhint="search"><button class="cancel" id="findClose">ביטול</button></div>
   <div class="results" id="findResults"></div></div></div>
 <nav id="nav" hidden>
-  <button data-tab="home">בית</button><button data-tab="comm">עמלות</button><button data-tab="clients">לקוחות</button><button data-tab="deals">עסקאות</button>
+  <button data-tab="home">ראשי</button><button data-tab="ops">תפעול</button><button data-tab="clients">לקוחות</button><button data-tab="comm">עמלות</button>
 </nav>
 <div id="sheet" class="sheet-bg" hidden><div class="sheet" id="sheetBody"></div></div>
 <script src="engine.js"></script>
@@ -199,13 +244,24 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
-const PAGE = "7c0a54";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+// ---------- pairing: the Mac shows a QR code whose link carries a device key after "#" (a browser never sends that part anywhere). It is kept on this phone and mixed into the unlock key.
+const DKEY = "salesdesk.dk";
+(() => {
+  const m = /^#k=([0-9a-f]{64})$/.exec(location.hash);
+  if (!m) return;
+  try { localStorage.setItem(DKEY, m[1]); localStorage.removeItem("salesdesk.keys"); localStorage.removeItem("salesdesk.faceid"); } catch (e) {}
+  history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
+})();
+const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
+const PAGE = "17e3f6";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 async function deriveKeys(pass, env) {
-  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveBits"]);
+  let material = pass;
+  if (env.dk) { const dk = deviceKey(); if (!dk) throw new Error("nodk"); material = pass + "\u0000" + dk; }   // same mixing as the Mac: passphrase, one zero byte, device key
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(material), "PBKDF2", false, ["deriveBits"]);
   const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: b64(env.salt), iterations: env.iterations }, base, 512));
   return { enc: bits.slice(0, 32), mac: bits.slice(32), salt: env.salt };
 }
@@ -290,6 +346,7 @@ async function load(pass, useFace) {
     if (!keys) { showLogin(""); return; }
     state = await open(env, keys);
   } catch (e) {
+    if (e && e.message === "nodk") { showLogin("האייפון עוד לא מזווג. פתח את הקישור מקוד ה־QR שמוצג על מסך המחשב."); return; }
     localStorage.removeItem(KEY);
     if (useFace === true) localStorage.removeItem(FKEY);   // the passphrase changed since Face ID was set: it is set again after the next login
     showLogin(pass ? "סיסמה שגויה" : useFace === true ? "הסיסמה הוחלפה. צריך להיכנס שוב בסיסמה." : "");
@@ -376,38 +433,85 @@ function premiumBy(rows, key) {
   rows.filter(r => r.action === "הצטרפות" && (r.premium || 0) > 0).forEach(r => { const k = key(r) || "לא כתוב"; sums[k] = (sums[k] || 0) + r.premium; });
   return fold(sums);
 }
+const FIN = new Set(["השתלמות", "גמל", "גמל להשקעה"]);
+const initials = n => String(n || "").split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("");
+const daysAgo = d => { if (!d) return null; const t = new Date(String(d).slice(0, 10)); return isNaN(t) ? null : Math.max(0, Math.floor((Date.now() - t) / 86400000)); };
+function areasOf(rows) {
+  const ok = rows.filter(r => !r.stale && !r.test);
+  const pen = ok.filter(r => r.product === "פנסיה"), fin = ok.filter(r => FIN.has(r.product || "")), ins = ok.filter(r => r.product !== "פנסיה" && !FIN.has(r.product || ""));
+  const dep = r => r.deposit != null ? r.deposit : r.salary != null ? r.salary * 0.185 : 0;
+  return { ins, fin, pen,
+    appointmentPremium: ins.filter(r => r.action === "מינוי סוכן").reduce((t, r) => t + (r.premium || 0), 0),
+    financeRaised: fin.filter(r => r.action === "ניוד").reduce((t, r) => t + (r.amount || 0), 0),
+    financeAppointed: fin.filter(r => r.action === "מינוי סוכן").reduce((t, r) => t + (r.amount || 0), 0),
+    pensionDeposit: pen.filter(r => r.action !== "מינוי סוכן").reduce((t, r) => t + dep(r), 0) };
+}
+function trendSvg(ms, cur, bestP) {
+  const list = ms.slice(-8), W = 320, H = 70, max = Math.max(bestP, 1) * 1.25, step = list.length > 1 ? (W - 30) / (list.length - 1) : 0;
+  const pts = list.map((m, i) => [15 + i * step, H - 14 - (m.premium / max) * (H - 28)]);
+  const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  return `<svg class="trend" viewBox="0 0 ${W} ${H + 8}" preserveAspectRatio="none"><defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fac8b0" stop-opacity=".38"/><stop offset="1" stop-color="#fac8b0" stop-opacity="0"/></linearGradient></defs>
+    <path d="${d} L${pts[pts.length - 1][0]} ${H} L${pts[0][0]} ${H} Z" fill="url(#tg)"/><path d="${d}" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    ${list.map((m, i) => `<circle cx="${pts[i][0]}" cy="${pts[i][1]}" r="${m.month === cur ? 4.5 : 2.6}" fill="${m.month === cur ? "#fac8b0" : "rgba(255,255,255,.75)"}"/><text x="${pts[i][0]}" y="${H + 7}" font-size="8.5" text-anchor="middle" fill="rgba(255,255,255,${m.month === cur ? 1 : .6})">${shortMonth(m.month)}</text>`).join("")}</svg>`;
+}
+function donutSvg(frac, color, rest) {
+  const R = 50, C = 2 * Math.PI * R, on = Math.max(0, Math.min(1, frac)) * C;
+  return `<svg viewBox="0 0 120 120" width="108" height="108"><circle cx="60" cy="60" r="${R}" fill="none" stroke="${rest}" stroke-width="13"/>
+    ${on > 0 ? `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${color}" stroke-width="13" stroke-linecap="round" stroke-dasharray="${on} ${C}" transform="rotate(-90 60 60)"/>` : ""}</svg>`;
+}
+function waitingCard() {
+  const n = opsList().filter(e => e.cat === "mine" || e.cat === "sign").length;
+  return n ? `<button class="waiting" data-goops="1"><span>ממתין לך בתפעול</span><b class="num">${n}</b></button>` : "";
+}
+let homeFin = false;   // (kept above) insurance / finance inside the production sheet
+function prodData() {
+  const A = areasOf(state.rows.filter(r => r.month === month && !r.test));
+  const pr = homeFin ? A.fin.filter(r => r.action !== "מינוי סוכן") : A.ins.filter(r => r.action === "הצטרפות");
+  const val = r => homeFin ? (r.amount || 0) : (r.premium || 0);
+  const done = pr.filter(r => r.issued === true), open = pr.filter(r => r.issued !== true);
+  return { pr, val, done, open, sum: l => l.reduce((t, r) => t + val(r), 0), pct: pr.length ? done.length / pr.length : 0 };
+}
+// The box on the home screen: only how many were issued and how many not, with the ring. A tap opens the sheet with the clients.
+function prodCard() {
+  const d = prodData();
+  return `<button class="glass tap" data-prodsheet="1" style="display:block;width:100%;text-align:right;font:inherit;color:var(--ink)"><div class="row"><b style="font-size:17px;color:var(--deep)">מצב הפקות</b><span class="small">‹</span></div>
+    <div class="donutrow"><div class="donut">${donutSvg(d.pct, "#6ee7b7", "rgba(244,169,138,.85)")}<b class="num">${Math.round(d.pct * 100)}%<small>הופקו</small></b></div>
+      <div class="leg"><div><i style="background:#6ee7b7"></i>הופק<b class="num">${money(d.sum(d.done))}</b></div><div><i style="background:#f4a98a"></i>לא הופק<b class="num">${money(d.sum(d.open))}</b></div></div></div></button>`;
+}
+let prodWhich = "open";
+function prodSheet() {
+  const d = prodData(), rows = prodWhich === "done" ? d.done : d.open;
+  $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:10px"><div class="name" style="font-size:19px">מצב הפקות · ${monthName(month)}</div><button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
+    <div class="seg"><button data-prodfin="0" class="${homeFin ? "" : "on"}">ביטוח</button><button data-prodfin="1" class="${homeFin ? "on" : ""}">פיננסים</button></div>
+    <div class="seg"><button data-prodwhich="done" class="${prodWhich === "done" ? "on" : ""}">הופק <span class="num">${d.done.length}</span> · ${money(d.sum(d.done))}</button><button data-prodwhich="open" class="${prodWhich === "open" ? "on" : ""}">לא הופק <span class="num">${d.open.length}</span> · ${money(d.sum(d.open))}</button></div>
+    ${rows.map(r => `<button class="opsl" style="width:100%;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:right;display:flex;justify-content:space-between;align-items:center" data-client="${esc(r.clientId)}">
+      <span><b style="color:var(--deep)">${esc(r.client)}</b><br><span class="small">${esc([r.product, r.company].filter(Boolean).join(" · "))}</span></span><b class="num">${money(d.val(r))}</b></button>`).join("") || '<div class="small" style="padding:8px 2px">אין</div>'}`;
+  $("sheet").hidden = false;
+}
 function home() {
   const mi = state.months.findIndex(x => x.month === month), m = state.months[mi], prev = state.months[mi - 1], ins = state.insights;
-  const best = ins.bestMonth === month, ratio = ins.bestPremium ? Math.min(1, m.premium / ins.bestPremium) : 0;
-  const rows = state.rows.filter(r => r.month === month && !r.test);
-  const clients = newest(state.clients.filter(x => x.month === month), c => c.order || 0);
-  const bySource = {}, counts = {};
-  clients.filter(c => !c.test).forEach(c => { const k = lead(c); bySource[k] = bySource[k] || 0; counts[k] = (counts[k] || 0) + 1; });
-  rows.filter(r => r.action === "הצטרפות").forEach(r => { const k = lead(r); bySource[k] = (bySource[k] || 0) + (r.premium || 0); });
-  const notes = Object.fromEntries(Object.entries(counts).map(([k, n]) => [k, n + " לקוחות"]));
-  const unsure = rows.filter(r => !r.sure).length, pending = clients.filter(c => c.sheetPending).length, stale = clients.filter(c => c.stale).length;
-  return `<div class="card dark" style="display:block"><div class="row"><div class="ttl">פרמיה חדשה</div>${m.partial ? '<span class="chipw">חודש בתהליך</span>' : ""}</div>
-      <div class="v num">${money(m.premium)}</div>
-      <div class="bar onDark"><i style="width:${Math.max(4, ratio * 100)}%"></i></div>
-      <div class="sub num">${best ? "החודש הכי חזק עד היום" : `שיא · ${shortMonth(ins.bestMonth)} ${money(ins.bestPremium)}`}${prev && (best || prev.month !== ins.bestMonth) ? ` &nbsp;·&nbsp; ${shortMonth(prev.month)} ${money(prev.premium)}` : ""}</div></div>
-    <div class="grid2" style="margin-bottom:10px">
-      <div class="card"><div class="mid num">${m.clients}</div><div class="small">לקוחות</div></div>
-      <div class="card"><div class="mid num">${m.joins}</div><div class="small">הצטרפויות</div></div>
-      <div class="card"><div class="mid num">${m.appointments}</div><div class="small">מינויי סוכן</div></div>
-      <div class="card"><div class="mid num">${m.transfers}</div><div class="small">ניודים</div></div>
-    </div>
-    ${breakdown("פרמיה לפי מוצר", premiumBy(rows, r => ["בריאות", "מחלות קשות", "בריאות + מחלות"].includes(r.product) ? "בריאות" : r.product))}
-    ${breakdown("פרמיה לפי חברה", premiumBy(rows.filter(r => r.company), r => r.company))}
-    ${breakdown("לפי מקור ליד", fold(bySource, notes))}
-    ${unsure + pending + stale ? `<div class="chips" style="margin:0 0 10px;padding:0"><span class="small" style="align-self:center">לטיפול</span>
-      ${unsure ? `<span class="tag w">${unsure} עסקאות לא ודאיות</span>` : ""}${pending ? `<span class="tag p">${pending} לא בגיליון</span>` : ""}${stale ? `<span class="tag w">${stale} לא מעודכנים</span>` : ""}</div>` : ""}
-    <h2>לקוחות ${monthName(month)} <small>${clients.length}</small></h2>${clients.map(clientCard).join("")}`;
+  const rows = state.rows.filter(r => r.month === month && !r.test), A = areasOf(rows);
+  const clients = newest(state.clients.filter(x => x.month === month && !x.test), c => c.order || 0);
+  const isBest = ins.bestMonth === month, ratio = ins.bestPremium ? Math.min(1, m.premium / ins.bestPremium) : 0, gap = Math.max(0, ins.bestPremium - m.premium);
+  const d = m.deltaPct;
+  const hero = `<div class="hero"><h3>מצב החודש · ${monthName(month)}</h3>
+    <div class="tip">${isBest ? "זה החודש הכי חזק שלך עד היום. ממשיכים!" : `עוד ${money(gap)} ואתה בשיא החודשים שלך`}</div>
+    ${d != null ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${d != null ? `<span class="delta2" style="color:${d >= 0 ? "var(--mint)" : "var(--gold-light)"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d)}% ${d >= 0 ? "מעל" : "מתחת"} החודש הקודם</span>` : ""}</div>` : ""}
+    <div class="figs"><div class="fig big"><div class="t">פרמיה שנמכרה</div><div class="v num">${money(m.premium)}</div><div class="s num">מינויים ${money(A.appointmentPremium)}</div></div>
+      <div class="fig"><div class="t">גיוסים</div><div class="v num">${money(A.financeRaised)}</div><div class="s num">ניודים · מינויים ${money(A.financeAppointed)}</div></div>
+      <div class="fig"><div class="t">פנסיות</div><div class="v num">${money(A.pensionDeposit)}</div><div class="s">הפקדות חודשיות</div></div></div>
+    ${trendSvg(state.months, month, ins.bestPremium)}</div>`;
+  return hero + prodCard() + `<div class="hh"><h2>לקוחות החודש</h2><span class="num">${clients.length}</span></div>${clients.map(clientCard).join("")}`;
 }
 function clientCard(c) {
-  const mine = state.rows.filter(r => r.clientId === c.id);
-  return `<button class="card client" data-client="${esc(c.id)}"><div class="row"><span class="name">${esc(c.name)}</span><span class="small">${esc(lead(c))}</span></div>
-    ${mine.length ? mine.slice(0, 3).map(r => dealLine(r, false)).join("") : '<div class="small" style="padding:4px 0">ללא מכירה</div>'}
-    ${mine.length > 3 ? `<div class="small">ועוד ${mine.length - 3} עסקאות</div>` : ""}</button>`;
+  const mine = state.rows.filter(r => r.clientId === c.id), sales = mine.filter(r => r.action !== "מינוי סוכן");
+  const done = mine.length && mine.every(r => r.issued === true), some = mine.some(r => r.issued === true);
+  const [label, col] = !mine.length ? ["ללא מוצר", "#8a8aa8"] : done ? ["הופקה", "#6ee7b7"] : some ? ["הופקה חלקית", "#8ab4ff"] : ["בתהליך", "#f4a98a"];
+  const prods = [...new Set((sales.length ? sales : mine).map(r => r.product).filter(Boolean))].slice(0, 2).join(" · ");
+  const prem = sales.reduce((t, r) => t + (r.premium || 0), 0), ago = daysAgo(c.joinDate);
+  return `<button class="cc" data-client="${esc(c.id)}" style="border-color:${col}55"><div class="h"><div class="av">${esc(initials(c.name))}</div><span class="nm">${esc(c.name)}</span></div>
+    <div class="ps">${esc(prods) || "&nbsp;"}</div><div class="f"><span class="dotc" style="background:${col}"></span><span class="st" style="color:${col}">${label}</span>
+    ${prem > 0 ? `<span class="pm num">${money(prem)}</span>` : ""}${ago != null ? `<span class="ago" style="${prem > 0 ? "" : "margin-right:auto"}">לפני ${ago} ימים</span>` : ""}</div></button>`;
 }
 // Newest purchase first: the sheet's row order (a sale not yet in the sheet is newest). Ties keep the file's order.
 const newest = (list, order) => list.map((x, i) => [x, i]).sort((a, b) => (order(b[0]) - order(a[0])) || (a[1] - b[1])).map(x => x[0]);
@@ -455,6 +559,34 @@ function clients() {
   return `<h2>לקוחות ${monthName(month)} <small>${list.length}</small></h2>
     ${list.map(clientCard).join("") || '<div class="small">לא נמצאו לקוחות</div>'}`;
 }
+// ---- Operations (view only): the same categories as the Mac, from the snapshot's `ops` list (client id, category, lines). No ID numbers, no mail text.
+let opsF = "all", opsFam = "ins";
+const CATS = { sign: "לחתימה", mine: "בטיפולי", company: "אצל החברה" };
+const opsList = () => state.ops || [];
+const opsMatch = (e, f) => f === "all" || (f === "mine" ? e.cat === "mine" || e.cat === "sign" : f === "new" ? e.isNew : e.cat === f);
+const famCount = f => opsList().filter(e => (e.fams || []).includes(f)).length;
+function opsSubtitle() { const n = opsList().filter(e => e.isNew).length; return n ? n + " לקוחות חדשים מהיום" : "אין חדש מהיום"; }
+function opsLines(e) {
+  return `<div>${e.lines.map(l => `<div class="opsl"><span class="dot ${l.open ? "open" : "done"}"></span><span><b style="color:var(--deep)">${esc(l.product || "")}</b>
+    <span class="small"> ${esc(l.company || "")}</span><br><span class="small" style="font-size:13px">${esc(l.text || "")}</span></span></div>`).join("")}</div>`;
+}
+function ops() {
+  const all = opsList();
+  const cnt = f => all.filter(e => opsMatch(e, f)).length;
+  const list = all.filter(e => (e.fams || []).includes(opsFam) && opsMatch(e, opsF));
+  const strip = `<div class="strip"><button data-opsf="new"><span class="n num">${cnt("new")}</span><span class="t">חדש מהיום</span></button>
+    <button data-opsf="company"><span class="n num">${cnt("company")}</span><span class="t">אצל החברה</span></button>
+    <button data-opsf="sign"><span class="n num">${cnt("sign")}</span><span class="t">לחתימה</span></button></div>`;
+  const fams = `<div class="chips" style="margin-bottom:6px">${[["ins", "ביטוח"], ["fin", "פיננסים"], ["pen", "פנסיה"]].map(([k, t]) => `<button data-opsfam="${k}" class="${opsFam === k ? "on" : ""}">${t} <span class="num">${famCount(k)}</span></button>`).join("")}</div>`;
+  const chips = `<div class="chips">${[["all", "הכול"], ["mine", "בטיפולי"], ["sign", "לחתימה"], ["company", "אצל החברה"], ["new", "חדש"]].map(([k, t]) => {
+    const n = all.filter(e => (e.fams || []).includes(opsFam) && opsMatch(e, k)).length;
+    return `<button data-opsf="${k}" class="${opsF === k ? "on" : ""}">${t} <span class="num">${n}</span></button>`; }).join("")}</div>`;
+  return strip + fams + chips + (list.map(e => {
+    const open = e.lines.filter(l => l.open), main = open[0] || e.lines[0] || {};
+    return `<button class="cc" data-opsclient="${esc(e.clientId)}"><div class="h"><div class="av">${esc(initials(e.name))}</div><span class="nm">${esc(e.name)}</span><span class="pill ${e.cat}">${CATS[e.cat] || ""}</span></div>
+      <div class="ps">${esc([main.product, main.company].filter(Boolean).join(" · "))}</div><div style="font-size:13.5px;color:var(--ink)">${esc(main.text || "")}</div>
+      ${open.length > 1 ? `<div class="small" style="margin-top:4px">ועוד ${open.length - 1} פתוחים</div>` : ""}</button>`; }).join("") || '<div class="small" style="padding:10px 2px">אין לקוחות פתוחים כאן</div>');
+}
 function deals() {
   const order = clientOrder();
   const list = newest(state.rows.filter(r => r.month === month), r => order[r.clientId] || r.order || 0);
@@ -467,7 +599,7 @@ const cmoney = v => money(v) || "0 ₪";
 const KEY_LINE = `<div class="key"><span><i style="background:var(--gold)"></i>היקף</span><span><i style="background:var(--emerald)"></i>נפרעים</span></div>`;
 function comm() {
   const m = state.months.find(x => x.month === month), c = m.commission, p = c.production;
-  const back = `<button class="back" data-comm="summary">→ חזרה לסיכום</button>`;
+  const back = `<div class="seg"><button data-comm="summary" class="${commView === "summary" ? "on" : ""}">סיכום</button><button data-comm="clients" class="${commView === "clients" ? "on" : ""}">לקוחות</button><button data-comm="month" class="${commView === "month" ? "on" : ""}">עסקאות</button></div>`;
   if (commView === "clients") {
     const list = newest(state.clients.filter(x => x.month === month), x => x.order || 0).map(x => {
       const rows = state.rows.filter(r => r.clientId === x.id);
@@ -488,7 +620,7 @@ function comm() {
           : `<span class="pair num"><span class="sc">${cmoney(r.commission.scope)}</span><span class="tr">${cmoney(r.commission.trailing)}</span></span>`}</button>`).join("");
   }
   const tile = (t, v, s) => `<div class="card"><div class="label">${t}</div><div class="mid num">${v}</div><div class="small">${s}</div></div>`;
-  return `<div class="tap" data-comm="clients">${nifraim(c)}</div>
+  return back + `<div class="tap" data-comm="clients">${nifraim(c)}</div>
     <div class="card goldcard tap" data-comm="clients"><div class="ttl">ההיקף החודשי</div><div class="v num">${money(c.scope)}</div></div>
     <div class="card"><div class="label">פרמיה חדשה לפי חודש · לחיצה על חודש בוחרת אותו</div>
       <div class="chart">${state.months.map(x => `<div class="tap ${x.month === month ? "on" : ""}" data-pick="${x.month}"><em class="num">${Math.round(x.premium).toLocaleString("he-IL")}</em>
@@ -525,6 +657,7 @@ function clientSheet(id, withComm) {
       ${premium ? `<span class="tag num" style="color:var(--emerald)">פרמיה ${money(premium)}</span>` : ""}
       ${withComm ? `<span class="tag num" style="color:var(--gold)">היקף ${cmoney(scope)}</span><span class="tag num" style="color:var(--gold)">נפרעים ${cmoney(trailing)}</span>` : ""}
       ${c.sheetPending ? '<span class="tag p">לא בגיליון</span>' : ""}<span class="tag">${c.hasFolder ? c.pdfCount + " מסמכים" : "אין תיקייה"}</span></div>
+    ${(() => { const e = opsList().find(x => x.clientId === id); return e ? `<div class="box"><div class="row"><b style="color:var(--deep)">מצב בתפעול</b><span class="pill ${e.cat}">${CATS[e.cat] || ""}</span></div>${opsLines(e)}</div>` : ""; })()}
     ${c.folderRel ? `<a class="folder" href="${esc(filesLink(c.folderRel))}">📁 פתיחת התיקייה בקבצים</a>` : ""}
     ${rows.map(r => `<div class="box ${cls(r.action)}"><div class="row"><span><b style="color:var(--deep)">${esc(r.product || "מוצר לא כתוב")}</b>
         <span class="${cls(r.action)}" style="font-weight:600"> ${esc(r.action)}</span></span><span class="amt num">${esc(amount(r))}</span></div>
@@ -555,12 +688,13 @@ function dealSheet(id, withComm) {
   $("sheet").hidden = false;
 }
 
-const TITLES = { home: ["", "מצב חודשי"], clients: ["לקוחות", ""], deals: ["עסקאות", ""], comm: ["העמלות שלי", ""] };
+const TITLES = { home: ["", "מצב חודשי"], ops: ["תפעול", ""], clients: ["לקוחות", ""], comm: ["העמלות שלי", ""] };
 function greeting() { const h = new Date().getHours(); return (h < 5 ? "לילה טוב" : h < 12 ? "בוקר טוב" : h < 17 ? "צהריים טובים" : h < 21 ? "ערב טוב" : "לילה טוב") + ", אדיר"; }
 function render() {
   $("title").textContent = TITLES[tab][0] || greeting(); $("subtitle").textContent = TITLES[tab][1];
   $("month").innerHTML = state.months.slice().reverse().map(m => `<option value="${m.month}" ${m.month === month ? "selected" : ""}>${monthName(m.month)}</option>`).join("");
-  $("view").innerHTML = { home, clients, deals, comm }[tab]();
+  $("view").innerHTML = { home, ops, clients, comm }[tab]();
+  if (tab === "ops") $("subtitle").textContent = opsSubtitle();
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
   $("stamp").textContent = "Mac: " + state.generatedAt.replace("T", " ").slice(5, 16) + (liveNote ? " · " + liveNote : "") + " · v" + PAGE;
 }
@@ -576,6 +710,11 @@ $("view").addEventListener("click", e => {
   if ((x = at("[data-pick]"))) { month = x.dataset.pick; return render(); }   // the chart only changes the month, like the menu at the top
   if ((x = at("[data-cmonth]"))) { month = x.dataset.cmonth; commView = "month"; render(); return scrollTo(0, 0); }
   if ((x = at("[data-comm]"))) { commView = x.dataset.comm; render(); return scrollTo(0, 0); }
+  if ((x = at("[data-prodsheet]"))) return prodSheet();
+  if ((x = at("[data-opsf]"))) { opsF = x.dataset.opsf; return render(); }
+  if ((x = at("[data-opsfam]"))) { opsFam = x.dataset.opsfam; return render(); }
+  if ((x = at("[data-goops]"))) { tab = "ops"; opsF = "mine"; render(); return scrollTo(0, 0); }
+  if ((x = at("[data-opsclient]"))) return clientSheet(x.dataset.opsclient, false);
   if ((x = at("[data-client]"))) return clientSheet(x.dataset.client, false);
 });
 $("search").addEventListener("click", findOpen);
@@ -587,6 +726,9 @@ $("find").addEventListener("click", e => {
   if (e.target.id === "find" || e.target.id === "findClose") findClose();
 });
 $("sheet").addEventListener("click", e => {
+  const pf = e.target.closest("[data-prodfin]"), pw = e.target.closest("[data-prodwhich]");
+  if (pf) { homeFin = pf.dataset.prodfin === "1"; prodSheet(); return render(); }
+  if (pw) { prodWhich = pw.dataset.prodwhich; return prodSheet(); }
   const card = e.target.closest("[data-client]");
   if (card) return clientSheet(card.dataset.client, !!card.dataset.commCard);
   if (e.target.id === "sheet" || e.target.id === "closeSheet") $("sheet").hidden = true;
