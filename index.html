@@ -298,7 +298,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "76d2c2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "b7b1d9";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -962,7 +962,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "76d2c2" || m[1] === PAGE) return false;
+    if (!m || PAGE === "b7b1d9" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -1055,6 +1055,19 @@ function goTab(t, dir) {   // dir: +1 the screen leaves to the right (the next t
   }, 170);
 }
 let busy = false;
+function settleUI() {
+  const v = $("view"), box = $("sheetBody"), back = $("sheetBack");
+  v.style.transition = v.style.transform = v.style.opacity = "";
+  [...box.children].forEach(c => { c.style.transform = ""; c.style.opacity = ""; });
+  box.style.transition = box.style.transform = ""; back.style.transition = back.style.transform = back.style.opacity = ""; back.hidden = true;
+  $("sheet").style.removeProperty("--dim"); $("ptr").style.opacity = 0; $("ptr").style.transform = "";
+  busy = false; sheetH = false;
+}
+document.addEventListener("touchcancel", settleUI, { passive: true });
+addEventListener("pageshow", settleUI);
+document.addEventListener("visibilitychange", () => { if (document.hidden) settleUI(); else setTimeout(settleUI, 50); });
+addEventListener("blur", settleUI);
+settleUI();
 (() => {   // a finger swipe sideways on a main screen moves to the neighbouring tab, the screen following the finger
   const v = $("view"); let x0 = null, y0 = null, dx = 0, mode = "", lx = 0, vx = 0, t0 = 0;
   const free = () => state && !busy && !$("app").hidden && $("sheet").hidden && $("find").hidden;
