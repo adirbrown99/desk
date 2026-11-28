@@ -265,7 +265,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "bd0e77";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "1e84d6";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -356,13 +356,17 @@ async function load(pass, useFace) {
     }
     else if (faceKeys && faceKeys.salt === env.salt) keys = faceKeys;   // back from the background: same session, no new prompt
     else if (saved && saved.salt === env.salt) keys = { enc: unhex(saved.enc), mac: unhex(saved.mac), salt: saved.salt };
-    if (!keys) { showLogin(""); return; }
+    if (!keys) {
+      // say why the phone asks: nothing remembered, or what it remembered no longer fits this site's copy
+      let why = ""; try { why = !saved ? "אין מפתח שמור במכשיר (" + (deviceKey() ? "המכשיר מזווג" : "לא מזווג") + ")" : saved.salt !== env.salt ? "המפתח השמור ישן, צריך כניסה אחת" : ""; } catch (e) {}
+      showLogin(pass ? "" : why); return;
+    }
     state = await open(env, keys);
   } catch (e) {
     if (e && e.message === "nodk") { showLogin("האייפון עוד לא מזווג. פתח את הקישור מקוד ה־QR שמוצג על מסך המחשב."); return; }
     if (pass) localStorage.removeItem(KEY);   // a remembered key is dropped only after a wrong passphrase was typed, never on a hiccup
     if (useFace === true) localStorage.removeItem(FKEY);   // the passphrase changed since Face ID was set: it is set again after the next login
-    showLogin(pass ? "סיסמה שגויה" : useFace === true ? "הסיסמה הוחלפה. צריך להיכנס שוב בסיסמה." : "");
+    showLogin(pass ? "סיסמה שגויה" : useFace === true ? "הסיסמה הוחלפה. צריך להיכנס שוב בסיסמה." : "המפתח השמור לא פתח את הנתונים (" + (e && e.message || "שגיאה") + ")");
     return;
   }
   faceKeys = keys;
@@ -824,7 +828,7 @@ async function selfUpdate() {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (m && PAGE !== "bd0e77" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
+    if (m && PAGE !== "1e84d6" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
       sessionStorage.setItem("salesdesk.reloaded." + m[1], "1");   // one try per version: never a reload loop
       location.replace(location.pathname + "?v=" + m[1]);
     }
