@@ -77,7 +77,7 @@ select.month {
   background: var(--card); padding: 10px 11px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.07); direction: rtl;
 }
 .card { background: var(--card); border-radius: 18px; padding: 14px; margin-bottom: 10px; border: 1px solid var(--glass-edge);
-  box-shadow: 0 4px 10px rgba(0,0,0,.18); }
+  }
 .dark { background: linear-gradient(135deg, #4b3fc4, #7b6cf6); border: 1px solid rgba(255,255,255,.08); color: #fff; box-shadow: 0 10px 26px rgba(123,108,246,.30); display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
 .dark .ttl { font-size: 16px; font-weight: 600; opacity: .9; }
 .dark .v { font-size: 44px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; margin-top: 6px; }
@@ -106,7 +106,7 @@ h2 small { color: var(--muted); font-weight: 500; font-size: 14px; }
 .chart .on i { background: var(--emerald); }
 .chart span { font-size: 11px; color: var(--muted); }
 .client { display: block; width: 100%; text-align: right; border: 0; font: inherit; color: inherit; }
-.dealrow { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; width: 100%; text-align: right; border: 0; font: inherit; color: inherit; padding: 12px 14px; margin-bottom: 6px; }
+.dealrow { content-visibility: auto; contain-intrinsic-size: auto 62px; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; width: 100%; text-align: right; border: 0; font: inherit; color: inherit; padding: 12px 14px; margin-bottom: 6px; }
 .dealrow .who { font-weight: 600; color: var(--deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .back { border: 0; background: none; color: var(--emerald); font: inherit; font-weight: 700; padding: 0 0 10px; }
 .tap { cursor: pointer; }
@@ -155,7 +155,7 @@ tr.on td { color: var(--emerald); font-weight: 700; }
 .waiting b { background: var(--fill); color: #fff; padding: 2px 11px; border-radius: 999px; }
 /* ---- the Mac app's look, phone-sized: glass cards with a soft top highlight, a hero with warm and cool glows, avatars, dotted status ---- */
 .glass { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), var(--card); border: 1px solid rgba(255,255,255,.10); border-radius: 18px; padding: 15px; margin-bottom: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.18); }
+  }
 .hero { position: relative; border-radius: 22px; padding: 14px 14px 8px; margin-bottom: 12px; color: #fff; border: 1px solid rgba(255,255,255,.22);
   background: radial-gradient(120% 90% at 100% 0%, rgba(244,169,138,.40), transparent 60%), radial-gradient(110% 90% at 0% 100%, rgba(138,180,255,.32), transparent 62%), linear-gradient(135deg, #4b3fc4, #7b6cf6);
   box-shadow: 0 12px 30px rgba(123,108,246,.42); }
@@ -182,7 +182,7 @@ tr.on td { color: var(--emerald); font-weight: 700; }
 .pbar em i { position: absolute; inset: 0 auto 0 0; background: rgba(244,169,138,.85); border-radius: 99px; }
 .hh { display: flex; align-items: baseline; gap: 8px; margin: 14px 2px 8px; } .hh h2 { margin: 0; font-size: 18px; font-weight: 800; color: var(--deep); } .hh span { color: var(--gold); font-weight: 700; font-size: 14px; }
 .cc { display: block; width: 100%; text-align: right; font: inherit; color: var(--ink); padding: 13px; margin-bottom: 10px; border-radius: 16px; border: 1px solid rgba(255,255,255,.10);
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), var(--card); box-shadow: 0 4px 10px rgba(0,0,0,.18); }
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), var(--card); content-visibility: auto; contain-intrinsic-size: auto 118px; }
 .cc .h { display: flex; align-items: center; gap: 9px; } .cc .h .nm { font-size: 16px; font-weight: 700; color: var(--deep); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cc .ps { font-size: 12.5px; color: var(--muted); margin: 6px 0 7px; min-height: 16px; }
 .cc .f { display: flex; align-items: center; gap: 6px; font-size: 12.5px; } .cc .f .st { font-weight: 700; } .cc .f .pm { margin-right: auto; font-weight: 700; color: var(--deep); } .cc .f .ago { color: var(--muted); font-size: 11.5px; }
@@ -296,7 +296,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "884d63";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "f37aaa";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -758,6 +758,10 @@ function figureSheet(kind) {
 // Sheets form a stack: a client opened from the production sheet, a policy opened from a client. Closing goes back one step; only the last one closes the layer.
 const sheetStack = []; let curSheet = null, popping = false;
 // A card that opens on top of another slides in from the side (a pushed step; Hebrew reads right to left, so it comes from the left); a step back slides the earlier card in from the right.
+const slideBelow = dir => {   // only what sits under the summary / details switch moves; the header and the switch stay
+  const kids = [...$("sheetBody").children], at = kids.findIndex(k => k.classList && k.classList.contains("seg"));
+  kids.slice(at + 1).forEach(el => el.animate([{ opacity: 0, transform: `translateX(${dir * 22}px)` }, { opacity: 1, transform: "none" }], { duration: 220, easing: "cubic-bezier(.2,.85,.25,1)" }));
+};
 const slide = dir => [...$("sheetBody").children].forEach(el => el.animate([{ opacity: 0, transform: `translateX(${dir * 34}px)` }, { opacity: 1, transform: "none" }], { duration: 300, easing: "cubic-bezier(.2,.85,.25,1)" }));
 const stacked = f => (...a) => {
   const pushed = !popping && curSheet && curSheet.f !== f && !$("sheet").hidden;
@@ -776,14 +780,19 @@ function closeSheet(quiet) {   // one step back; the last one closes the layer
 let sheetH = false;   // a sideways swipe inside a card is in progress: the pull down stays out of it
 let sheetClient = null, clientTab = "summary";
 const openClient = (id, comm) => { clientTab = "summary"; return clientSheet(id, comm); };
+function statusPill(r, d, issued) {   // the one place that says "issued"
+  if (!issued) return "";
+  const firm = !!(r.policy || r.policyRel) || r.issued === true;
+  return `<span class="st ISSUED">${firm ? "הופקה" : "הופקה · לפי הפורטל"}</span>`;
+}
 function productBox(r, withComm) {
-  const d = r.deal, issued = r.issued === true || (d && d.stage === "ISSUED");
-  const notes = [...new Set([r.cancels && "ביטול: " + r.cancels, r.lien && "שעבוד: " + r.lien, r.note, ...(r.info || [])].filter(Boolean).map(n => String(n).trim()))];
-  const pol = r.policy ? `<div class="small">פוליסה ${esc(r.policy)}${issued ? " · הופקה" + (r.issuedAt ? " " + fmtDate(r.issuedAt) : "") : ""}${r.policyPremium != null && r.premium != null && Math.round(r.policyPremium) !== Math.round(r.premium) ? ` · פרמיה בפוליסה ${money(r.policyPremium)} מול ${money(r.premium)} בדוח` : ""}</div>` : "";
+  const d = r.deal, issued = r.issued === true || (d && d.stage === "ISSUED"), stPill = statusPill(r, d, issued);
+  const notes = [...new Set([...(r.info && r.info.length ? [] : [r.cancels && "ביטול: " + r.cancels, r.lien && "שעבוד: " + r.lien]), r.note, ...(r.info || [])].filter(Boolean).map(n => String(n).trim()))];
+  const pol = r.policy ? `<div class="small">פוליסה ${esc(r.policy)}${issued && r.issuedAt ? " · תחילה " + fmtDate(r.issuedAt) : ""}${r.policyPremium != null && r.premium != null && Math.round(r.policyPremium) !== Math.round(r.premium) ? ` · פרמיה בפוליסה ${money(r.policyPremium)} מול ${money(r.premium)} בדוח` : ""}</div>` : "";
   return `<div class="pbox ${cls(r.action)}" data-deal="${esc(r.id)}"><div class="row"><span><b style="color:var(--deep);font-size:16px">${esc(r.product || "מוצר לא כתוב")}</b>
       <span class="${cls(r.action)}" style="font-weight:600"> ${esc(r.action)}</span></span><span class="amt num">${esc(amount(r))}</span></div>
     <div class="small" style="font-size:13.5px">${esc([company(r), r.person].filter(Boolean).join(" · "))}</div>${pol}
-    ${d ? `<div class="pl"><span class="st ${d.stage}">${esc(d.label || "")}</span>${d.days && !issued ? `<span class="small">${d.days} ימים בשלב</span>` : ""}${d.verified === false ? '<span class="small" style="color:var(--orange)">לא אומת</span>' : ""}</div>
+    ${stPill ? `<div class="pl">${stPill}</div>` : ""}${d ? `<div class="pl">${issued ? "" : `<span class="st ${d.stage}">${esc(d.label || "")}</span>`}${d.days && !issued ? `<span class="small">${d.days} ימים בשלב</span>` : ""}${d.verified === false ? '<span class="small" style="color:var(--orange)">לא אומת</span>' : ""}</div>
       ${d.waitingFor ? `<div class="small">ממתין ל: ${esc(d.waitingFor)}</div>` : ""}${d.next ? `<div class="small" style="color:var(--deep);font-weight:600">הפעולה הבאה: ${esc(d.next)}</div>` : ""}${d.check ? `<div class="small" style="color:var(--orange)">לבדיקה: ${esc(d.check)}</div>` : ""}` : ""}
     ${withComm ? `<div class="comm2 num">${r.commission.missing ? esc(r.commission.missing) : "היקף " + cmoney(r.commission.scope) + " · נפרעים " + cmoney(r.commission.trailing)}</div>` : ""}
     ${notes.map(n => `<div class="small">${esc(n)}</div>`).join("")}${question(r) ? `<div class="small" style="color:var(--orange)">לא ודאי: ${esc(question(r))}</div>` : ""}
@@ -817,16 +826,17 @@ function clientSheet(id, withComm) {
 // A product, opened: everything the Mac's product box shows, with the policy.
 function dealSheet(id, withComm) {
   const r = state.rows.find(x => x.id === id); if (!r) return;
+  const issuedNow = r.issued === true || (r.deal && r.deal.stage === "ISSUED");
   const c = state.clients.find(x => x.id === r.clientId) || {}, d = r.deal;
   const line = (k, v) => v == null || v === "" ? "" : `<div class="row" style="padding:7px 0;border-bottom:1px solid var(--line)"><span class="small">${k}</span><b>${esc(String(v))}</b></div>`;
   $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:12px"><div><div class="name" style="font-size:19px">${esc(r.product || "מוצר לא כתוב")}
       <span class="${cls(r.action)}"> ${esc(r.action)}</span></div><div class="small">${esc(r.client)} · ${esc(lead(c))} · ${monthName(r.month)}</div></div>
       <button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
-    ${d ? `<div class="pl" style="margin-bottom:8px"><span class="st ${d.stage}">${esc(d.label || "")}</span>${d.days && d.stage !== "ISSUED" ? `<span class="small">${d.days} ימים בשלב</span>` : ""}${d.verified === false ? '<span class="small" style="color:var(--orange)">לא אומת</span>' : ""}</div>` : ""}
-    <div class="card">${line("חברה", company(r))}${line("על שם", r.person)}${line("מספר פוליסה", r.policy)}${line("הופקה", r.issuedAt ? fmtDate(r.issuedAt) : (r.issued ? "כן" : ""))}
+    ${(d || issuedNow) ? `<div class="pl" style="margin-bottom:8px">${issuedNow ? statusPill(r, d, true) : `<span class="st ${d.stage}">${esc(d.label || "")}</span>`}${d && d.days && d.stage !== "ISSUED" ? `<span class="small">${d.days} ימים בשלב</span>` : ""}${d && d.verified === false ? '<span class="small" style="color:var(--orange)">לא אומת</span>' : ""}</div>` : ""}
+    <div class="card">${line("חברה", company(r))}${line("על שם", r.person)}${line("מספר פוליסה", r.policy)}${line("תחילה", r.issuedAt ? fmtDate(r.issuedAt) : "")}
       ${line("פרמיה בדוח", r.premium != null ? money(r.premium) : null)}${line("פרמיה בפוליסה", r.policyPremium != null ? money(r.policyPremium) : null)}${line("הפקדה", r.deposit != null ? money(r.deposit) : null)}
       ${line("צבירה", r.amount != null ? money(r.amount) : null)}${line("שכר", r.salary != null ? money(r.salary) : null)}
-      ${line("ביטול", r.cancels)}${line("שעבוד", r.lien)}${[...new Set([r.note, ...(r.info || [])].filter(Boolean).map(n => String(n).trim()))].map(n => line("הערה", n)).join("")}${question(r) ? line("לא ודאי", question(r)) : ""}
+      ${r.info && r.info.length ? "" : line("ביטול", r.cancels) + line("שעבוד", r.lien)}${[...new Set([r.note, ...(r.info || [])].filter(Boolean).map(n => String(n).trim()))].map(n => line("הערה", n)).join("")}${question(r) ? line("לא ודאי", question(r)) : ""}
       ${d && d.waitingFor ? line("ממתין ל", d.waitingFor) : ""}${d && d.next ? line("הפעולה הבאה", d.next) : ""}${d && d.check ? line("לבדיקה", d.check) : ""}
       ${withComm ? line("סוג עמלה", r.commission.label) + (r.commission.missing ? line("עמלה", r.commission.missing)
         : line("היקף", cmoney(r.commission.scope)) + line("נפרעים", cmoney(r.commission.trailing))) + line("הנחה", r.commission.assumed) : ""}</div>
@@ -893,7 +903,7 @@ $("sheet").addEventListener("click", e => {
   if (pf) { homeFin = pf.dataset.prodfin === "1"; prodSheet(); return render(); }
   if (pw) { prodWhich = pw.dataset.prodwhich; return prodSheet(); }
   const ct = e.target.closest("[data-ctab]"), pb = e.target.closest("[data-deal]");
-  if (ct) { clientTab = ct.dataset.ctab; return clientSheet(sheetClient.id, sheetClient.withComm); }
+  if (ct) { const to = ct.dataset.ctab; if (to === clientTab) return; clientTab = to; clientSheet(sheetClient.id, sheetClient.withComm); return slideBelow(to === "details" ? -1 : 1); }
   if (pb && !e.target.closest("a")) return dealSheet(pb.dataset.deal, sheetClient && sheetClient.withComm);
   const card = e.target.closest("[data-client]");
   if (card) { clientTab = "summary"; return clientSheet(card.dataset.client, !!card.dataset.commCard); }
@@ -917,7 +927,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "884d63" || m[1] === PAGE) return false;
+    if (!m || PAGE === "f37aaa" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -970,21 +980,33 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) self
 (() => {   // in a client card: swipe sideways between summary and details
   const box = $("sheetBody"); let x0 = null, y0 = null, dx = 0;
   const isClient = () => curSheet && curSheet.f.name === "clientSheet" && sheetClient;
+  const below = () => { const kids = [...box.children], at = kids.findIndex(k => k.classList && k.classList.contains("seg")); return kids.slice(at + 1); };
   box.addEventListener("touchstart", e => { const t = e.touches[0]; x0 = isClient() ? t.clientX : null; y0 = t.clientY; dx = 0; sheetH = false; }, { passive: true });
   box.addEventListener("touchmove", e => {
     if (x0 === null) return;
     const t = e.touches[0]; dx = t.clientX - x0; const dy = t.clientY - y0;
     if (!sheetH) { if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.6) sheetH = true; else if (Math.abs(dy) > 14) x0 = null; else return; }
-    if (sheetH) { e.preventDefault(); [...box.children].forEach(c => { c.style.transform = `translateX(${dx * .35}px)`; c.style.opacity = 1 - Math.min(.4, Math.abs(dx) / 500); }); }
+    if (sheetH) { e.preventDefault(); below().forEach(c => { c.style.transform = `translateX(${dx * .3}px)`; c.style.opacity = 1 - Math.min(.35, Math.abs(dx) / 500); }); }
   }, { passive: false });
   box.addEventListener("touchend", () => {
     if (!sheetH) { x0 = null; return; }
     const want = dx > 0 ? "details" : "summary", dir = dx > 0 ? -1 : 1;
     [...box.children].forEach(c => { c.style.transform = ""; c.style.opacity = ""; });
-    if (Math.abs(dx) > 60 && want !== clientTab && isClient()) { clientTab = want; clientSheet(sheetClient.id, sheetClient.withComm); slide(dir); }
+    if (Math.abs(dx) > 60 && want !== clientTab && isClient()) { clientTab = want; clientSheet(sheetClient.id, sheetClient.withComm); slideBelow(dir); }
     x0 = null; setTimeout(() => { sheetH = false; }, 30);
   });
 })();
+function kickViewport() {   // a home-screen app sometimes opens with a window shorter than the screen: the bar floats high and a band stays empty
+  if (navigator.standalone !== true) return;
+  const short = () => innerHeight < screen.height - 30 && innerWidth <= screen.width + 1;
+  if (!short()) return;
+  const m = document.querySelector('meta[name="viewport"]'), c = m.content;
+  m.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"; scrollTo(0, 0);   // dropping viewport-fit makes the page measure itself again
+  requestAnimationFrame(() => { m.content = c; setTimeout(() => { if (short() && !sessionStorage.getItem("salesdesk.vp")) { sessionStorage.setItem("salesdesk.vp", "1"); location.reload(); } }, 400); });
+}
+["pageshow", "resize", "orientationchange"].forEach(t => addEventListener(t, () => setTimeout(kickViewport, 250)));
+document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(kickViewport, 250); });
+setTimeout(kickViewport, 500);
 const TABS = ["home", "ops", "clients", "comm"];
 function goTab(t, dir) {   // dir: +1 the screen leaves to the right (the next tab lies to the left), -1 the other way
   const v = $("view"); busy = true;
@@ -1023,13 +1045,17 @@ let busy = false;
     setTimeout(() => { v.style.transition = ""; }, 260);
   });
 })();
-(() => {   // pull down at the very top: refresh
-  const el = $("ptr"); let y0 = null, dy = 0;
-  document.addEventListener("touchstart", e => { y0 = scrollY <= 0 && state && $("sheet").hidden && $("find").hidden && !document.body.style.position ? e.touches[0].clientY : null; dy = 0; }, { passive: true });
-  document.addEventListener("touchmove", e => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0);
-    el.style.opacity = Math.min(1, dy / 90); el.style.transform = `translateY(${Math.min(dy * .5, 56) - 50}px) rotate(${dy * 2}deg)`; }, { passive: true });
+(() => {   // a long pull down at the very top refreshes (short pulls and sideways moves never do)
+  const el = $("ptr"); let x0 = null, y0 = null, dy = 0, off = false;
+  document.addEventListener("touchstart", e => { const t = e.touches[0]; off = false; dy = 0;
+    y0 = scrollY <= 0 && state && !busy && $("sheet").hidden && $("find").hidden && !document.body.style.position ? t.clientY : null; x0 = t.clientX; }, { passive: true });
+  document.addEventListener("touchmove", e => { if (y0 === null || off) return; const t = e.touches[0], ddx = Math.abs(t.clientX - x0);
+    dy = Math.max(0, t.clientY - y0);
+    if (ddx > 18 && ddx > dy * .5) { off = true; el.style.opacity = 0; el.style.transform = ""; return; }   // a sideways move: not a refresh
+    const k = Math.max(0, dy - 60) / 160;   // nothing shows for the first 60px
+    el.style.opacity = Math.min(1, k * 1.4); el.style.transform = `translateY(${Math.min(k * 70, 60) - 50}px) rotate(${k * 300}deg)`; }, { passive: true });
   document.addEventListener("touchend", async () => {
-    if (y0 !== null && dy > 110) { if (await selfUpdate(true)) return; el.style.transform = "translateY(6px)"; el.style.opacity = 1; el.textContent = "⟳"; el.classList.add("spin"); await load("", false, true); el.classList.remove("spin"); el.textContent = "↓"; }
+    if (y0 !== null && !off && dy > 220) { if (await selfUpdate(true)) return; el.style.transform = "translateY(6px)"; el.style.opacity = 1; el.textContent = "⟳"; el.classList.add("spin"); await load("", false, true); el.classList.remove("spin"); el.textContent = "↓"; }
     el.style.opacity = 0; el.style.transform = ""; y0 = null; dy = 0; });
 })();
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}   // ask the phone not to clear the remembered key
