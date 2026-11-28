@@ -265,7 +265,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "614b47";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "bd0e77";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -330,6 +330,7 @@ async function enableFace() {
     $("faceSet").hidden = true; $("faceAsk").hidden = true; liveNote = "Face ID הופעל"; render();
   } catch (e) {
     b.textContent = e.message === "noprf" ? "Face ID לא נתמך כאן" : "הפעלת Face ID";
+    liveNote = "Face ID: " + (e.name || "") + " " + (e.message || ""); render();   // the reason is shown, so a phone that refuses can be diagnosed
   }
 }
 async function keysFromFace(saved) {
@@ -359,7 +360,7 @@ async function load(pass, useFace) {
     state = await open(env, keys);
   } catch (e) {
     if (e && e.message === "nodk") { showLogin("האייפון עוד לא מזווג. פתח את הקישור מקוד ה־QR שמוצג על מסך המחשב."); return; }
-    localStorage.removeItem(KEY);
+    if (pass) localStorage.removeItem(KEY);   // a remembered key is dropped only after a wrong passphrase was typed, never on a hiccup
     if (useFace === true) localStorage.removeItem(FKEY);   // the passphrase changed since Face ID was set: it is set again after the next login
     showLogin(pass ? "סיסמה שגויה" : useFace === true ? "הסיסמה הוחלפה. צריך להיכנס שוב בסיסמה." : "");
     return;
@@ -823,7 +824,7 @@ async function selfUpdate() {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (m && PAGE !== "614b47" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
+    if (m && PAGE !== "bd0e77" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
       sessionStorage.setItem("salesdesk.reloaded." + m[1], "1");   // one try per version: never a reload loop
       location.replace(location.pathname + "?v=" + m[1]);
     }
@@ -831,6 +832,7 @@ async function selfUpdate() {
 }
 selfUpdate();
 document.addEventListener("visibilitychange", () => { if (!document.hidden) selfUpdate(); });
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}   // ask the phone not to clear the remembered key
 load("", faceSaved() && window.PublicKeyCredential ? "auto" : false);
 </script>
 </body>
