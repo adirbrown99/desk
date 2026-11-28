@@ -201,7 +201,7 @@ tr.on td { color: var(--emerald); font-weight: 700; }
 .sheet h4 { margin: 14px 2px 6px; font-size: 15px; color: var(--deep); }
 nav {
   position: fixed; inset: auto 12px calc(env(safe-area-inset-bottom) + 12px); display: flex; gap: 2px; padding: 5px;
-  background: rgba(27,26,58,.88); border: 1px solid var(--glass-edge); border-radius: 22px; backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  background: rgba(27,26,58,.97); border: 1px solid var(--glass-edge); border-radius: 22px; transform: translateZ(0); will-change: transform; z-index: 3;
   box-shadow: 0 10px 28px rgba(0,0,0,.18);
 }
 nav button { flex: 1; border: 0; background: none; font: inherit; font-weight: 700; font-size: 13.5px; padding: 11px 2px; border-radius: 17px; color: var(--muted); }
@@ -223,6 +223,10 @@ nav button.on { background: var(--fill); color: var(--gold-light); }
 .stamp { text-align: center; color: var(--muted); font-size: 12px; margin-top: 16px; }
 .stamp button { border: 0; background: none; color: var(--muted); font: inherit; text-decoration: underline; }
 [hidden] { display: none !important; }
+* { scrollbar-width: none; -webkit-tap-highlight-color: transparent; } *::-webkit-scrollbar { display: none; width: 0; height: 0; }
+html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea { -webkit-user-select: text; user-select: text; }
+#view { will-change: transform; }
 /* loading: grey cards that shimmer until the first screen is ready; pull down from the top to refresh */
 .boot { padding: calc(env(safe-area-inset-top) + 70px) 14px 0; } .boot i { display: block; height: 130px; border-radius: 22px; margin-bottom: 12px; background: linear-gradient(100deg, rgba(255,255,255,.05) 30%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.05) 70%) 0 0 / 200% 100%; animation: shimmer 1.3s linear infinite; }
 .boot i:first-child { height: 230px; }
@@ -292,7 +296,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "a0fa36";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "884d63";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -769,6 +773,7 @@ function closeSheet(quiet) {   // one step back; the last one closes the layer
   $("sheetBody").scrollTop = prev.top || 0;
   if (!quiet) slide(1);
 }
+let sheetH = false;   // a sideways swipe inside a card is in progress: the pull down stays out of it
 let sheetClient = null, clientTab = "summary";
 const openClient = (id, comm) => { clientTab = "summary"; return clientSheet(id, comm); };
 function productBox(r, withComm) {
@@ -912,7 +917,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "a0fa36" || m[1] === PAGE) return false;
+    if (!m || PAGE === "884d63" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -929,15 +934,17 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) self
     if (!bg.hidden && !document.body.style.position) { at = scrollY; document.body.style.cssText += `position:fixed;top:${-at}px;left:0;right:0;`; }
     else if (bg.hidden && document.body.style.position) { document.body.style.position = document.body.style.top = document.body.style.left = document.body.style.right = ""; scrollTo(0, at); }
   }).observe(bg, { attributes: true, attributeFilter: ["hidden"] });
+  bg.addEventListener("touchmove", e => { if (e.target === bg) e.preventDefault(); }, { passive: false });   // the dim area never drags the page behind it
   const back = $("sheetBack"); let y0 = null, dy = 0, last = 0, v = 0, t0 = 0, under = false;
   const dim = x => bg.style.setProperty("--dim", x);
   const reset = () => { box.style.transition = box.style.transform = back.style.transition = back.style.transform = back.style.opacity = ""; bg.style.removeProperty("--dim"); back.hidden = true; under = false; };
   box.addEventListener("touchstart", e => { y0 = box.scrollTop <= 0 ? e.touches[0].clientY : null; dy = 0; v = 0; last = e.touches[0].clientY; t0 = performance.now(); box.style.transition = "none"; back.style.transition = "none"; }, { passive: true });
   box.addEventListener("touchmove", e => {
-    if (y0 === null) return;
+    if (sheetH) return;
+    if (y0 === null) { if (box.scrollHeight <= box.clientHeight + 1 || box.scrollTop + box.clientHeight >= box.scrollHeight - 1) e.preventDefault(); return; }   // no bounce of the page at either end
     const y = e.touches[0].clientY, now = performance.now();
     dy = y - y0; v = (y - last) / Math.max(1, now - t0); last = y; t0 = now;
-    if (dy <= 0) { dy = 0; box.style.transform = ""; return; }
+    if (dy <= 0) { dy = 0; box.style.transform = ""; if (box.scrollHeight <= box.clientHeight + 1) e.preventDefault(); return; }
     e.preventDefault();
     if (!under && sheetStack.length) {   // the earlier card is laid out underneath, a little smaller and dimmer
       const prev = sheetStack[sheetStack.length - 1]; back.innerHTML = prev.html; back.hidden = false; back.scrollTop = prev.top || 0; under = true;
@@ -947,6 +954,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) self
     if (under) { back.style.transform = `scale(${.94 + .06 * k})`; back.style.opacity = .55 + .45 * k; } else dim(Math.max(.15, .6 - dy / 700));
   }, { passive: false });
   box.addEventListener("touchend", () => {
+    if (sheetH) { y0 = null; reset(); return; }
     const go = y0 !== null && (dy > 110 || (dy > 30 && v > .6)); y0 = null;
     if (!go) {
       box.style.transition = "transform .24s cubic-bezier(.2,.85,.25,1)"; box.style.transform = "";
@@ -959,16 +967,40 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) self
     setTimeout(() => { closeSheet(true); reset(); }, 230);   // the real earlier card takes the place of the picture beneath, so nothing jumps
   });
 })();
+(() => {   // in a client card: swipe sideways between summary and details
+  const box = $("sheetBody"); let x0 = null, y0 = null, dx = 0;
+  const isClient = () => curSheet && curSheet.f.name === "clientSheet" && sheetClient;
+  box.addEventListener("touchstart", e => { const t = e.touches[0]; x0 = isClient() ? t.clientX : null; y0 = t.clientY; dx = 0; sheetH = false; }, { passive: true });
+  box.addEventListener("touchmove", e => {
+    if (x0 === null) return;
+    const t = e.touches[0]; dx = t.clientX - x0; const dy = t.clientY - y0;
+    if (!sheetH) { if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.6) sheetH = true; else if (Math.abs(dy) > 14) x0 = null; else return; }
+    if (sheetH) { e.preventDefault(); [...box.children].forEach(c => { c.style.transform = `translateX(${dx * .35}px)`; c.style.opacity = 1 - Math.min(.4, Math.abs(dx) / 500); }); }
+  }, { passive: false });
+  box.addEventListener("touchend", () => {
+    if (!sheetH) { x0 = null; return; }
+    const want = dx > 0 ? "details" : "summary", dir = dx > 0 ? -1 : 1;
+    [...box.children].forEach(c => { c.style.transform = ""; c.style.opacity = ""; });
+    if (Math.abs(dx) > 60 && want !== clientTab && isClient()) { clientTab = want; clientSheet(sheetClient.id, sheetClient.withComm); slide(dir); }
+    x0 = null; setTimeout(() => { sheetH = false; }, 30);
+  });
+})();
 const TABS = ["home", "ops", "clients", "comm"];
-function goTab(t, dir) {   // dir: +1 content leaves to the right (next tab, which lies to the left), -1 the other way
-  tab = t; commView = "summary"; render(); scrollTo(0, 0);
-  const v = $("view"); v.classList.remove("in");
-  v.animate([{ opacity: 0, transform: `translateX(${-dir * 46}px)` }, { opacity: 1, transform: "none" }], { duration: 320, easing: "cubic-bezier(.2,.85,.25,1)" });
-  growRings(); enter("month");
+function goTab(t, dir) {   // dir: +1 the screen leaves to the right (the next tab lies to the left), -1 the other way
+  const v = $("view"); busy = true;
+  v.style.transition = "transform .17s ease-in"; v.style.transform = `translateX(${dir * 108}%)`;
+  setTimeout(() => {
+    tab = t; commView = "summary"; v.classList.remove("in"); render(); scrollTo(0, 0);   // the heavy drawing happens while nothing is visible
+    v.style.transition = "none"; v.style.transform = `translateX(${-dir * 32}%)`; void v.offsetWidth;
+    v.style.transition = "transform .3s cubic-bezier(.2,.85,.25,1)"; v.style.transform = "";
+    growRings(); enter("month");
+    setTimeout(() => { v.style.transition = ""; busy = false; }, 320);
+  }, 170);
 }
+let busy = false;
 (() => {   // a finger swipe sideways on a main screen moves to the neighbouring tab, the screen following the finger
   const v = $("view"); let x0 = null, y0 = null, dx = 0, mode = "", lx = 0, vx = 0, t0 = 0;
-  const free = () => state && !$("app").hidden && $("sheet").hidden && $("find").hidden;
+  const free = () => state && !busy && !$("app").hidden && $("sheet").hidden && $("find").hidden;
   document.addEventListener("touchstart", e => {
     const t = e.touches[0]; x0 = null;
     if (!free() || e.target.closest(".chips, .tpick, select, input, textarea") || t.clientX < 24 || t.clientX > innerWidth - 24) return;
@@ -980,15 +1012,15 @@ function goTab(t, dir) {   // dir: +1 content leaves to the right (next tab, whi
     if (!mode) { if (Math.abs(ddx) > 12 && Math.abs(ddx) > Math.abs(ddy) * 1.6) mode = "h"; else if (Math.abs(ddy) > 12) { x0 = null; return; } else return; }
     e.preventDefault(); dx = ddx; vx = (t.clientX - lx) / Math.max(1, now - t0); lx = t.clientX; t0 = now;
     const i = TABS.indexOf(tab), ok = (dx > 0 && i < TABS.length - 1) || (dx < 0 && i > 0), pull = ok ? dx : dx / 4;   // the first and last tab resist
-    v.style.transition = "none"; v.style.transform = `translateX(${pull * .6}px)`; v.style.opacity = 1 - Math.min(.5, Math.abs(pull) / 360);
+    v.style.transition = "none"; v.style.transform = `translateX(${pull * .7}px)`;
   }, { passive: false });
   document.addEventListener("touchend", () => {
     if (x0 === null || mode !== "h") { x0 = null; return; }
     x0 = null; const i = TABS.indexOf(tab), dir = dx > 0 ? 1 : -1, to = TABS[i + dir];
     const go = to && (Math.abs(dx) > 90 || (Math.abs(dx) > 30 && Math.abs(vx) > .5));
-    v.style.transition = "transform .22s cubic-bezier(.2,.85,.25,1), opacity .22s"; v.style.transform = ""; v.style.opacity = "";
-    setTimeout(() => { v.style.transition = ""; }, 240);
-    if (go) goTab(to, dir);
+    if (go) return goTab(to, dir);
+    v.style.transition = "transform .24s cubic-bezier(.2,.85,.25,1)"; v.style.transform = "";
+    setTimeout(() => { v.style.transition = ""; }, 260);
   });
 })();
 (() => {   // pull down at the very top: refresh
