@@ -49,6 +49,8 @@ h1 { font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: elli
 .icon.spin svg { animation: spin .9s linear infinite; color: var(--emerald); }
 @keyframes spin { to { transform: rotate(360deg); } }
 /* motion: a sheet slides up over a fading dim, a screen rises in, a pressed card dips */
+.sheet.back { position: absolute; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none; transform-origin: 50% 100%; animation: none !important; }
+#sheetBody { position: relative; z-index: 1; }
 @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes dim { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -205,7 +207,7 @@ nav {
 nav button { flex: 1; border: 0; background: none; font: inherit; font-weight: 700; font-size: 13.5px; padding: 11px 2px; border-radius: 17px; color: var(--muted); }
 nav button.on { background: var(--fill); color: var(--gold-light); }
 .folder { display: block; text-align: center; text-decoration: none; font-weight: 700; font-size: 15px; padding: 11px; margin: 0 0 8px; border-radius: 13px; background: var(--fill); color: var(--gold-light); }
-.sheet-bg { position: fixed; inset: 0; background: rgba(8,8,24,.6); z-index: 5; display: flex; align-items: flex-end; }
+.sheet-bg { position: fixed; inset: 0; background: rgba(8,8,24,var(--dim,.6)); z-index: 5; display: flex; align-items: flex-end; }
 .sheet { overscroll-behavior: contain; background: rgb(27,26,58); will-change: transform; width: 100%; max-height: 86dvh; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 18px 16px calc(env(safe-area-inset-bottom) + 20px); }
 .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #4b3fc4, #7b6cf6); color: var(--gold-light); display: grid; place-items: center; font-weight: 800; flex: none; }
 .box { background: rgba(46,43,92,.9); border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; border-right: 4px solid #999; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
@@ -261,7 +263,7 @@ nav button.on { background: var(--fill); color: var(--gold-light); }
 <nav id="nav" hidden>
   <button data-tab="home">ראשי</button><button data-tab="ops">תפעול</button><button data-tab="clients">לקוחות</button><button data-tab="comm">עמלות</button>
 </nav>
-<div id="sheet" class="sheet-bg" hidden><div class="sheet" id="sheetBody"></div></div>
+<div id="sheet" class="sheet-bg" hidden><div class="sheet back" id="sheetBack" hidden></div><div class="sheet" id="sheetBody"></div></div>
 <script src="engine.js"></script>
 <script>
 // An app, not a web page: no pinch zoom (Safari ignores the viewport setting on its own); double-tap zoom is off through touch-action.
@@ -290,7 +292,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "2bbaa5";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "a0fa36";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -751,15 +753,21 @@ function figureSheet(kind) {
 // The client card, as on the Mac: a header (name, source and month, the folder), "summary" (the products with policy, state and next step) and "details".
 // Sheets form a stack: a client opened from the production sheet, a policy opened from a client. Closing goes back one step; only the last one closes the layer.
 const sheetStack = []; let curSheet = null, popping = false;
+// A card that opens on top of another slides in from the side (a pushed step; Hebrew reads right to left, so it comes from the left); a step back slides the earlier card in from the right.
+const slide = dir => [...$("sheetBody").children].forEach(el => el.animate([{ opacity: 0, transform: `translateX(${dir * 34}px)` }, { opacity: 1, transform: "none" }], { duration: 300, easing: "cubic-bezier(.2,.85,.25,1)" }));
 const stacked = f => (...a) => {
-  if (!popping && curSheet && curSheet.f !== f && !$("sheet").hidden) sheetStack.push({ ...curSheet, top: $("sheetBody").scrollTop });
-  curSheet = { f, a }; return f(...a);
+  const pushed = !popping && curSheet && curSheet.f !== f && !$("sheet").hidden;
+  if (pushed) sheetStack.push({ ...curSheet, top: $("sheetBody").scrollTop, html: $("sheetBody").innerHTML });
+  curSheet = { f, a }; const out = f(...a);
+  if (pushed) { $("sheetBody").scrollTop = 0; slide(-1); }
+  return out;
 };
-function closeSheet() {
+function closeSheet(quiet) {   // one step back; the last one closes the layer
   const prev = sheetStack.pop();
   if (!prev) { curSheet = null; $("sheet").hidden = true; return; }
   popping = true; try { prev.f(...prev.a); } finally { popping = false; }
   $("sheetBody").scrollTop = prev.top || 0;
+  if (!quiet) slide(1);
 }
 let sheetClient = null, clientTab = "summary";
 const openClient = (id, comm) => { clientTab = "summary"; return clientSheet(id, comm); };
@@ -904,7 +912,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "2bbaa5" || m[1] === PAGE) return false;
+    if (!m || PAGE === "a0fa36" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -921,20 +929,66 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) self
     if (!bg.hidden && !document.body.style.position) { at = scrollY; document.body.style.cssText += `position:fixed;top:${-at}px;left:0;right:0;`; }
     else if (bg.hidden && document.body.style.position) { document.body.style.position = document.body.style.top = document.body.style.left = document.body.style.right = ""; scrollTo(0, at); }
   }).observe(bg, { attributes: true, attributeFilter: ["hidden"] });
-  let y0 = null, dy = 0, last = 0, v = 0, t0 = 0;
-  box.addEventListener("touchstart", e => { y0 = box.scrollTop <= 0 ? e.touches[0].clientY : null; dy = 0; v = 0; last = e.touches[0].clientY; t0 = performance.now(); box.style.transition = "none"; bg.style.transition = "none"; }, { passive: true });
+  const back = $("sheetBack"); let y0 = null, dy = 0, last = 0, v = 0, t0 = 0, under = false;
+  const dim = x => bg.style.setProperty("--dim", x);
+  const reset = () => { box.style.transition = box.style.transform = back.style.transition = back.style.transform = back.style.opacity = ""; bg.style.removeProperty("--dim"); back.hidden = true; under = false; };
+  box.addEventListener("touchstart", e => { y0 = box.scrollTop <= 0 ? e.touches[0].clientY : null; dy = 0; v = 0; last = e.touches[0].clientY; t0 = performance.now(); box.style.transition = "none"; back.style.transition = "none"; }, { passive: true });
   box.addEventListener("touchmove", e => {
     if (y0 === null) return;
     const y = e.touches[0].clientY, now = performance.now();
     dy = y - y0; v = (y - last) / Math.max(1, now - t0); last = y; t0 = now;
-    if (dy > 0) { e.preventDefault(); box.style.transform = `translateY(${dy}px)`; bg.style.opacity = Math.max(.25, 1 - dy / 500); } else { dy = 0; box.style.transform = ""; bg.style.opacity = ""; }
+    if (dy <= 0) { dy = 0; box.style.transform = ""; return; }
+    e.preventDefault();
+    if (!under && sheetStack.length) {   // the earlier card is laid out underneath, a little smaller and dimmer
+      const prev = sheetStack[sheetStack.length - 1]; back.innerHTML = prev.html; back.hidden = false; back.scrollTop = prev.top || 0; under = true;
+    }
+    box.style.transform = `translateY(${dy}px)`;
+    const k = Math.min(1, dy / 320);
+    if (under) { back.style.transform = `scale(${.94 + .06 * k})`; back.style.opacity = .55 + .45 * k; } else dim(Math.max(.15, .6 - dy / 700));
   }, { passive: false });
-  const reset = () => { box.style.transition = box.style.transform = bg.style.transition = bg.style.opacity = ""; };
   box.addEventListener("touchend", () => {
     const go = y0 !== null && (dy > 110 || (dy > 30 && v > .6)); y0 = null;
-    if (!go) { box.style.transition = "transform .22s cubic-bezier(.2,.85,.25,1)"; bg.style.transition = "opacity .22s"; box.style.transform = ""; bg.style.opacity = ""; setTimeout(reset, 240); dy = 0; return; }
-    box.style.transition = "transform .2s ease-in"; bg.style.transition = "opacity .2s"; box.style.transform = "translateY(105%)"; bg.style.opacity = 0; dy = 0;
-    setTimeout(() => { reset(); closeSheet(); }, 200);
+    if (!go) {
+      box.style.transition = "transform .24s cubic-bezier(.2,.85,.25,1)"; box.style.transform = "";
+      if (under) { back.style.transition = "transform .24s, opacity .24s"; back.style.transform = "scale(.94)"; back.style.opacity = .55; }
+      setTimeout(reset, 260); dy = 0; return;
+    }
+    box.style.transition = "transform .22s ease-in"; box.style.transform = "translateY(105%)";
+    if (under) { back.style.transition = "transform .22s, opacity .22s"; back.style.transform = "scale(1)"; back.style.opacity = 1; } else dim(0);
+    dy = 0;
+    setTimeout(() => { closeSheet(true); reset(); }, 230);   // the real earlier card takes the place of the picture beneath, so nothing jumps
+  });
+})();
+const TABS = ["home", "ops", "clients", "comm"];
+function goTab(t, dir) {   // dir: +1 content leaves to the right (next tab, which lies to the left), -1 the other way
+  tab = t; commView = "summary"; render(); scrollTo(0, 0);
+  const v = $("view"); v.classList.remove("in");
+  v.animate([{ opacity: 0, transform: `translateX(${-dir * 46}px)` }, { opacity: 1, transform: "none" }], { duration: 320, easing: "cubic-bezier(.2,.85,.25,1)" });
+  growRings(); enter("month");
+}
+(() => {   // a finger swipe sideways on a main screen moves to the neighbouring tab, the screen following the finger
+  const v = $("view"); let x0 = null, y0 = null, dx = 0, mode = "", lx = 0, vx = 0, t0 = 0;
+  const free = () => state && !$("app").hidden && $("sheet").hidden && $("find").hidden;
+  document.addEventListener("touchstart", e => {
+    const t = e.touches[0]; x0 = null;
+    if (!free() || e.target.closest(".chips, .tpick, select, input, textarea") || t.clientX < 24 || t.clientX > innerWidth - 24) return;
+    x0 = t.clientX; y0 = t.clientY; dx = 0; mode = ""; lx = x0; vx = 0; t0 = performance.now();
+  }, { passive: true });
+  document.addEventListener("touchmove", e => {
+    if (x0 === null) return;
+    const t = e.touches[0], ddx = t.clientX - x0, ddy = t.clientY - y0, now = performance.now();
+    if (!mode) { if (Math.abs(ddx) > 12 && Math.abs(ddx) > Math.abs(ddy) * 1.6) mode = "h"; else if (Math.abs(ddy) > 12) { x0 = null; return; } else return; }
+    e.preventDefault(); dx = ddx; vx = (t.clientX - lx) / Math.max(1, now - t0); lx = t.clientX; t0 = now;
+    const i = TABS.indexOf(tab), ok = (dx > 0 && i < TABS.length - 1) || (dx < 0 && i > 0), pull = ok ? dx : dx / 4;   // the first and last tab resist
+    v.style.transition = "none"; v.style.transform = `translateX(${pull * .6}px)`; v.style.opacity = 1 - Math.min(.5, Math.abs(pull) / 360);
+  }, { passive: false });
+  document.addEventListener("touchend", () => {
+    if (x0 === null || mode !== "h") { x0 = null; return; }
+    x0 = null; const i = TABS.indexOf(tab), dir = dx > 0 ? 1 : -1, to = TABS[i + dir];
+    const go = to && (Math.abs(dx) > 90 || (Math.abs(dx) > 30 && Math.abs(vx) > .5));
+    v.style.transition = "transform .22s cubic-bezier(.2,.85,.25,1), opacity .22s"; v.style.transform = ""; v.style.opacity = "";
+    setTimeout(() => { v.style.transition = ""; }, 240);
+    if (go) goTab(to, dir);
   });
 })();
 (() => {   // pull down at the very top: refresh
