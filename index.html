@@ -238,7 +238,7 @@ html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout
 input, textarea { -webkit-user-select: text; user-select: text; }
 #pager { position: relative; } #view { will-change: transform; } #peek, #peek2 { position: absolute; left: 0; right: 0; top: 0; visibility: hidden; will-change: transform; pointer-events: none; }
 #peek, #peek2 { max-height: 100vh; overflow: hidden; }   /* only the first screenful is ever seen while it slides in: a small layer to paint and move */
-#peek .cc, #peek2 .cc, #peek .dealrow, #peek2 .dealrow { content-visibility: visible; }   /* not skipped while it slides in: nothing is drawn for the first time in the middle of the move */
+.pre .cc, .pre .dealrow { content-visibility: visible; }   /* not skipped while it slides in: nothing is drawn for the first time in the middle of the move */
 /* loading: grey cards that shimmer until the first screen is ready; pull down from the top to refresh */
 .boot { padding: calc(env(safe-area-inset-top) + 70px) 14px 0; } .boot i { display: block; height: 130px; border-radius: 22px; margin-bottom: 12px; background: linear-gradient(100deg, rgba(255,255,255,.05) 30%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.05) 70%) 0 0 / 200% 100%; animation: shimmer 1.3s linear infinite; }
 .boot i:first-child { height: 230px; }
@@ -308,7 +308,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "ba3fda";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "0dfc29";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -909,7 +909,7 @@ function prepare() {
     const el = peekFor(d), to = TABS[TABS.indexOf(tab) + d];
     if (!to) { el.innerHTML = ""; el.dataset.t = ""; continue; }
     if (el.dataset.t === to && el.dataset.rv === String(rv)) continue;
-    el.innerHTML = { home, ops, clients, comm }[to](); el.dataset.t = to; el.dataset.rv = String(rv);
+    el.innerHTML = { home, ops, clients, comm }[to](); el.dataset.t = to; el.dataset.rv = String(rv); el.classList.add("pre");
     prepareSoon(60); return;   // ONE screen per idle turn: two in a row was a 250ms block that a swipe starting meanwhile had to wait for
   }
 }
@@ -1039,7 +1039,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "ba3fda" || m[1] === PAGE) return false;
+    if (!m || PAGE === "0dfc29" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -1169,7 +1169,7 @@ settleUI();
     const to = TABS[TABS.indexOf(tab) + d], el = peekFor(d);
     if (cur && cur !== el) hide(cur);
     if (!to) { cur = null; return null; }
-    if (el.dataset.t !== to || el.dataset.rv !== String(rv)) { el.innerHTML = { home, ops, clients, comm }[to](); el.dataset.t = to; el.dataset.rv = String(rv); }   // only if it was not ready
+    if (el.dataset.t !== to || el.dataset.rv !== String(rv)) { el.innerHTML = { home, ops, clients, comm }[to](); el.dataset.t = to; el.dataset.rv = String(rv); el.classList.add("pre"); }   // only if it was not ready
     el.style.top = Math.max(0, -pager.getBoundingClientRect().top) + "px"; el.style.visibility = "visible"; cur = el; return to;
   };
   document.addEventListener("touchstart", e => {
@@ -1214,13 +1214,15 @@ settleUI();
       const old = $("view"), pid = nu.id, other = $(pid === "peek" ? "peek2" : "peek"), beforeTop = nu.getBoundingClientRect().top;
       old.style.transition = nu.style.transition = "none"; old.style.transform = nu.style.transform = ""; nu.style.top = ""; nu.style.visibility = "";
       // The three layers ROTATE: the old screen is kept (it is now the neighbour on the other side, so swiping straight back needs nothing built and nothing is destroyed in the landing frame); only the far one is stale.
-      old.id = other.id; other.id = pid; nu.id = "view"; old.style.visibility = ""; old.classList.remove("in");
+      old.id = other.id; other.id = pid; nu.id = "view"; old.style.visibility = ""; old.classList.remove("in", "pre"); other.classList.remove("pre");
       old.dataset.t = TABS[TABS.indexOf(tab) - d] || ""; old.dataset.rv = String(rv); other.dataset.t = ""; other.dataset.rv = "";
       const nv = $("view"); nv.classList.remove("in");
       scrollTo(0, Math.min(scrollY, pager.getBoundingClientRect().top + scrollY)); if (tab === "ops") $("subtitle").textContent = opsSubtitle();   // the new screen lands where the neighbour was: no page jump
       const dy = beforeTop - nv.getBoundingClientRect().top;      // the page had to settle (a shorter screen cannot stay scrolled): glide there instead of jumping
       if (Math.abs(dy) > 2) { nv.style.transform = `translateY(${dy}px)`; void nv.offsetWidth; nv.style.transition = "transform .28s cubic-bezier(.2,.85,.25,1)"; nv.style.transform = ""; setTimeout(() => { nv.style.transition = ""; }, 300); } else nv.style.transition = "";
       growRings(); enter("month"); busy = false; prepareSoon();
+      // The arrived screen is still fully laid out (it was a neighbour): letting it skip its off-screen cards is a re-layout, done later when the finger is not on the phone, never in the landing frame.
+      const calm = () => { if (nv.id !== "view") return; if (x0 !== null || busy) { setTimeout(calm, 600); return; } nv.classList.remove("pre"); }; setTimeout(calm, 900);
     }, 310);
   };
   // The move is heard by ONE listener that exists from the start (not added while the finger is already down): the phone knows the swipe area in advance and does not wait for the page on every move.
