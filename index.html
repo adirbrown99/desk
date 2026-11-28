@@ -308,7 +308,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "9306a2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "ba3fda";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -904,16 +904,17 @@ function render() { header(); $("view").innerHTML = { home, ops, clients, comm }
 // The neighbouring screens are drawn BEFORE the finger touches the phone, in idle time, and wait outside the view: the swipe only moves them (nothing is built or laid out while it runs).
 const peekFor = d => $(d > 0 ? "peek" : "peek2");
 function prepare() {
-  if (!state || $("app").hidden) return;
+  if (!state || $("app").hidden || busy) return;   // never while a swipe is landing: `tab` is already the new one, so the first/last tab would empty the very screen that is arriving
   for (const d of [1, -1]) {
     const el = peekFor(d), to = TABS[TABS.indexOf(tab) + d];
     if (!to) { el.innerHTML = ""; el.dataset.t = ""; continue; }
     if (el.dataset.t === to && el.dataset.rv === String(rv)) continue;
     el.innerHTML = { home, ops, clients, comm }[to](); el.dataset.t = to; el.dataset.rv = String(rv);
+    prepareSoon(60); return;   // ONE screen per idle turn: two in a row was a 250ms block that a swipe starting meanwhile had to wait for
   }
 }
 let prepTimer = 0;
-function prepareSoon() { clearTimeout(prepTimer); prepTimer = setTimeout(() => (window.requestIdleCallback || setTimeout)(() => { try { prepare(); } catch (e) {} }, { timeout: 800 }), 350); }
+function prepareSoon(ms = 350) { clearTimeout(prepTimer); prepTimer = setTimeout(() => (window.requestIdleCallback || setTimeout)(() => { try { prepare(); } catch (e) {} }, { timeout: 800 }), ms); }
 function header() {
   $("title").textContent = TITLES[tab][0] || greeting(); fitTitle(); document.fonts && document.fonts.ready.then(fitTitle);   // too long beside the buttons: the greeting without the name
   $("subtitle").textContent = tab === "ops" ? opsSubtitle() : todayLine(tab);
@@ -1038,7 +1039,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "9306a2" || m[1] === PAGE) return false;
+    if (!m || PAGE === "ba3fda" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -1210,9 +1211,11 @@ settleUI();
     tab = to; commView = "summary"; header();   // the title, the month menu and the bar already say where it is going
     setTimeout(() => {
       // The finished neighbour BECOMES the screen (the two swap places): nothing is built, nothing is copied, nothing jumps. The old screen becomes the spare.
-      const old = $("view"), pid = nu.id, beforeTop = nu.getBoundingClientRect().top;
+      const old = $("view"), pid = nu.id, other = $(pid === "peek" ? "peek2" : "peek"), beforeTop = nu.getBoundingClientRect().top;
       old.style.transition = nu.style.transition = "none"; old.style.transform = nu.style.transform = ""; nu.style.top = ""; nu.style.visibility = "";
-      old.id = pid; nu.id = "view"; old.style.visibility = ""; old.innerHTML = ""; old.dataset.t = ""; old.dataset.rv = "";
+      // The three layers ROTATE: the old screen is kept (it is now the neighbour on the other side, so swiping straight back needs nothing built and nothing is destroyed in the landing frame); only the far one is stale.
+      old.id = other.id; other.id = pid; nu.id = "view"; old.style.visibility = ""; old.classList.remove("in");
+      old.dataset.t = TABS[TABS.indexOf(tab) - d] || ""; old.dataset.rv = String(rv); other.dataset.t = ""; other.dataset.rv = "";
       const nv = $("view"); nv.classList.remove("in");
       scrollTo(0, Math.min(scrollY, pager.getBoundingClientRect().top + scrollY)); if (tab === "ops") $("subtitle").textContent = opsSubtitle();   // the new screen lands where the neighbour was: no page jump
       const dy = beforeTop - nv.getBoundingClientRect().top;      // the page had to settle (a shorter screen cannot stay scrolled): glide there instead of jumping
