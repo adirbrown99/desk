@@ -304,7 +304,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "233dea";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "da6658";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -908,7 +908,7 @@ const shortNum = v => { v = Math.round(v); return v >= 1e6 ? (Math.round(v / 1e5
 function todayLine(kind) {
   const t = dayKey(), rows = state.rows.filter(r => r.addedOn === t && !r.test), cl = state.clients.filter(c => c.addedOn === t && !c.test);
   if (kind === "home") {
-    if (!rows.length) return "היום · עוד לא הוקם כלום";
+    if (!rows.length) return "היום · אין מכירות. להתעורר!";
     const A = areasOf(rows), prem = A.ins.filter(r => r.action === "הצטרפות").reduce((s, r) => s + (r.premium || 0), 0), pens = A.pen.filter(r => r.action !== "מינוי סוכן").length;
     const parts = [prem > 0 && `${shortNum(prem)} פרמיה`, pens > 0 && `${pens} פנסיות`, A.financeRaised > 0 && `${shortNum(A.financeRaised)} פיננסים`].filter(Boolean);   // only what there is: no zeros
     return "היום · " + (parts.length ? parts.join(" · ") : `${rows.length} עסקאות`);
@@ -917,7 +917,7 @@ function todayLine(kind) {
   if (kind === "comm") {
     const sc = rows.reduce((s, r) => s + (r.commission.scope || 0), 0), tr = rows.reduce((s, r) => s + (r.commission.trailing || 0), 0);
     const parts = [sc > 0 && `${shortNum(sc)} היקף`, tr > 0 && `${shortNum(tr)} נפרעים`].filter(Boolean);
-    return parts.length ? "היום · " + parts.join(" · ") : "אין עמלה חדשה היום";
+    return parts.length ? "היום · " + parts.join(" · ") : "יום בלי סליקות? בוא נזיז משהו";
   }
   return "";
 }
@@ -1012,7 +1012,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "233dea" || m[1] === PAGE) return false;
+    if (!m || PAGE === "da6658" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -1136,12 +1136,18 @@ settleUI();
     if (pk.dataset.t !== to) { pk.innerHTML = { home, ops, clients, comm }[to](); pk.dataset.t = to; place(); }
     pk.hidden = false; return to;
   };
+  let lastT = 0;
   document.addEventListener("touchstart", e => {
     const t = e.touches[0]; x0 = null;
     if (!free() || e.target.closest(".chips, .tpick, select, input, textarea") || t.clientX < 24 || t.clientX > innerWidth - 24) return;
-    x0 = t.clientX; y0 = t.clientY; dx = 0; mode = ""; lx = x0; vx = 0; t0 = performance.now(); W = pager.clientWidth || innerWidth;
+    x0 = t.clientX; y0 = t.clientY; dx = 0; mode = ""; lx = x0; vx = 0; t0 = lastT = performance.now(); W = pager.clientWidth || innerWidth;
+    // The move and the end are heard on the touched element itself: if the screen under the finger is redrawn during the gesture, a document listener would never hear the end (the screen stayed half way).
+    const tg = e.target, off = () => { tg.removeEventListener("touchmove", onMove); tg.removeEventListener("touchend", end); tg.removeEventListener("touchcancel", end); };
+    const end = ev => { off(); if (ev.type === "touchcancel") { dx = 0; vx = 0; } onEnd(); };
+    tg.addEventListener("touchmove", onMove, { passive: false }); tg.addEventListener("touchend", end); tg.addEventListener("touchcancel", end);
   }, { passive: true });
-  document.addEventListener("touchmove", e => {
+  const onMove = e => {
+    lastT = performance.now();
     if (x0 === null) return;
     const t = e.touches[0], ddx = t.clientX - x0, ddy = t.clientY - y0, now = performance.now();
     if (!mode) { if (Math.abs(ddx) > 12 && Math.abs(ddx) > Math.abs(ddy) * 1.6) mode = "h"; else if (Math.abs(ddy) > 12) { x0 = null; return; } else return; }
@@ -1150,8 +1156,8 @@ settleUI();
     v.style.transition = pk.style.transition = "none";
     if (!to) { v.style.transform = `translateX(${dx / 4}px)`; return; }   // the first and last tab resist
     v.style.transform = `translateX(${dx}px)`; pk.style.transform = `translateX(${(d > 0 ? -W : W) + dx}px)`;
-  }, { passive: false });
-  document.addEventListener("touchend", () => {
+  };
+  const onEnd = () => {
     if (x0 === null || mode !== "h") { x0 = null; return; }
     x0 = null; const d = dx > 0 ? 1 : -1, to = TABS[TABS.indexOf(tab) + d];
     const go = to && (Math.abs(dx) > W * .28 || (Math.abs(dx) > 30 && Math.abs(vx) > .5));
@@ -1170,7 +1176,8 @@ settleUI();
       v.classList.remove("in"); scrollTo(0, 0); if (tab === "ops") $("subtitle").textContent = opsSubtitle();
       growRings(); enter("month"); busy = false; v.style.transition = "";
     }, 310);
-  });
+  };
+  setInterval(() => { if (x0 !== null && mode === "h" && performance.now() - lastT > 3000) { x0 = null; mode = ""; settleUI(); } }, 1000);   // a gesture that never ended heals itself
 })();
 (() => {   // a long pull down at the very top refreshes (a sideways move or a short pull never shows or does anything)
   const el = $("ptr"); let x0 = null, y0 = null, dy = 0, mode = "";
