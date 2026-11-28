@@ -39,10 +39,10 @@ body::before {
 .num { font-family: ui-rounded, -apple-system, system-ui; font-variant-numeric: tabular-nums; }
 header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
 header > div:first-child { min-width: 0; }
-h1 { font-size: 22px; line-height: 1.15; margin: 0; color: var(--deep); font-weight: 800; letter-spacing: -.3px; }
+h1 { font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; margin: 0; color: var(--deep); font-weight: 800; letter-spacing: -.3px; }
 .sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
-.tools { display: flex; gap: 7px; align-items: center; flex: none; }
-.icon { border: 0; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4b3fc4, #7b6cf6); color: #fff; border: 1px solid rgba(255,255,255,.08); display: grid; place-items: center; padding: 0;
+.tools { display: flex; gap: 6px; align-items: center; flex: none; }
+.icon { border: 0; width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4b3fc4, #7b6cf6); color: #fff; border: 1px solid rgba(255,255,255,.08); display: grid; place-items: center; padding: 0;
   box-shadow: 0 2px 8px rgba(0,0,0,.07); flex: none; }
 .icon svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .icon:active { transform: scale(.94); }
@@ -71,8 +71,8 @@ body.locked { position: fixed; left: 0; right: 0; overflow: hidden; }
 .faceAsk button#enableFace2 { border: 0; font: inherit; font-weight: 700; padding: 9px 16px; border-radius: 12px; background: var(--fill); color: var(--gold-light); }
 .faceAsk .later { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; margin-top: 6px; padding: 0; }
 select.month {
-  appearance: none; -webkit-appearance: none; border: 0; font: inherit; font-weight: 700; font-size: 15px; color: var(--deep);
-  background: var(--card); padding: 10px 12px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.07); direction: rtl;
+  appearance: none; -webkit-appearance: none; border: 0; font: inherit; font-weight: 700; font-size: 14px; color: var(--deep);
+  background: var(--card); padding: 10px 11px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.07); direction: rtl;
 }
 .card { background: var(--card); border-radius: 18px; padding: 14px; margin-bottom: 10px; border: 1px solid var(--glass-edge);
   box-shadow: 0 4px 10px rgba(0,0,0,.18); }
@@ -186,7 +186,7 @@ tr.on td { color: var(--emerald); font-weight: 700; }
 .cc .f { display: flex; align-items: center; gap: 6px; font-size: 12.5px; } .cc .f .st { font-weight: 700; } .cc .f .pm { margin-right: auto; font-weight: 700; color: var(--deep); } .cc .f .ago { color: var(--muted); font-size: 11.5px; }
 .av { width: 32px; height: 32px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--gold-light); background: linear-gradient(135deg, #4b3fc4, #7b6cf6); }
 .av.lg { width: 40px; height: 40px; font-size: 14px; }
-.seg { display: flex; background: rgba(255,255,255,.08); border-radius: 12px; padding: 3px; margin: 0 0 12px; } .seg button { flex: 1; border: 0; font: inherit; font-weight: 700; font-size: 14px; padding: 8px 4px; border-radius: 9px; background: none; color: var(--muted); } .seg button.on { background: #6ee7b7; color: #0b2a1f; }
+.seg { display: flex; background: rgba(255,255,255,.08); border-radius: 12px; padding: 3px; margin: 0 0 12px; } .seg button { flex: 1; border: 0; font: inherit; font-weight: 700; font-size: 14px; padding: 8px 4px; border-radius: 9px; background: none; color: var(--muted); } .seg button.on { background: var(--fill); color: #fff; }
 .fig.tap { cursor: pointer; } .fig.tap:active { opacity: .7; }
 .pbox { position: relative; background: rgba(255,255,255,.07); border-radius: 14px; padding: 11px 12px 11px 12px; margin-bottom: 9px; border-right: 4px solid #8a8aa8; }
 .pbox.j { border-right-color: #6ee7b7; } .pbox.a { border-right-color: #f4a98a; } .pbox.t { border-right-color: #8ab4ff; }
@@ -221,9 +221,17 @@ nav button.on { background: var(--fill); color: var(--gold-light); }
 .stamp { text-align: center; color: var(--muted); font-size: 12px; margin-top: 16px; }
 .stamp button { border: 0; background: none; color: var(--muted); font: inherit; text-decoration: underline; }
 [hidden] { display: none !important; }
+/* loading: grey cards that shimmer until the first screen is ready; pull down from the top to refresh */
+.boot { padding: calc(env(safe-area-inset-top) + 70px) 14px 0; } .boot i { display: block; height: 130px; border-radius: 22px; margin-bottom: 12px; background: linear-gradient(100deg, rgba(255,255,255,.05) 30%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.05) 70%) 0 0 / 200% 100%; animation: shimmer 1.3s linear infinite; }
+.boot i:first-child { height: 230px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.ptr { position: fixed; top: calc(env(safe-area-inset-top) + 4px); left: 50%; margin-left: -18px; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--fill); color: #fff; font-weight: 800; opacity: 0; transform: translateY(-50px); z-index: 4; pointer-events: none; }
+.ptr.spin { animation: spin .9s linear infinite; }
 </style>
 </head>
 <body>
+<div id="boot" class="boot"><i></i><i></i><i></i></div>
+<div id="ptr" class="ptr" aria-hidden="true">↓</div>
 <div id="login" class="login" hidden>
   <img class="logo" src="icon-192.png" alt="Clarus" width="72" height="72">
   <h1>Clarus</h1>
@@ -282,7 +290,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "e1fda2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "493b9b";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -357,12 +365,12 @@ async function keysFromFace(saved) {
 }
 
 let lastCt = "";
-async function load(pass, useFace) {
+async function load(pass, useFace, force) {
   if (!window.crypto || !crypto.subtle) { showLogin("הדפדפן חוסם פענוח בכתובת לא מאובטחת. צריך כתובת https."); return; }
   let env;
   try { env = await (await fetch("snapshot.enc.json", { cache: "no-store" })).json(); }
   catch (e) { showLogin("לא הצלחתי להביא את הנתונים. בדוק חיבור."); return; }
-  if (state && !pass && useFace !== true && env.ct === lastCt) return;   // same snapshot as on screen: leave the screen (and its scroll) alone
+  if (state && !force && !pass && useFace !== true && env.ct === lastCt) return;   // same snapshot as on screen: leave the screen (and its scroll) alone
   let keys = null;
   try {
     let saved = JSON.parse(localStorage.getItem(KEY) || "null");
@@ -403,7 +411,7 @@ async function load(pass, useFace) {
   }
   state.rows = state.rows.filter(r => !r.test); state.clients = state.clients.filter(c => !c.test);
   if (!state.months.some(m => m.month === month)) month = state.months[state.months.length - 1].month;
-  $("login").hidden = true; $("app").hidden = false; $("nav").hidden = false; $("pass").value = "";
+  $("boot").hidden = true; $("login").hidden = true; $("app").hidden = false; $("nav").hidden = false; $("pass").value = "";
   liveNote = kept;
   render();
   live();
@@ -434,6 +442,7 @@ async function live() {
   render();
 }
 function showLogin(msg) {
+  $("boot").hidden = true;
   $("login").hidden = false; $("app").hidden = true; $("nav").hidden = true; $("err").textContent = msg;
   $("face").hidden = !(faceSaved() && window.PublicKeyCredential);
 }
@@ -614,7 +623,7 @@ const CATS = { sign: "לחתימה", mine: "בטיפולי", company: "אצל ה
 const opsList = () => state.ops || [];
 const opsMatch = (e, f) => f === "all" || (f === "mine" ? e.cat === "mine" || e.cat === "sign" : f === "new" ? e.isNew : e.cat === f);
 const famCount = f => opsList().filter(e => (e.fams || []).includes(f)).length;
-function opsSubtitle() { const n = opsList().filter(e => e.isNew).length; return n ? n + " לקוחות חדשים מהיום" : "אין חדש מהיום"; }
+function opsSubtitle() { const n = opsList().filter(e => e.isNew).length; return n === 1 ? "לקוח חדש מהיום" : n ? n + " לקוחות חדשים מהיום" : "אין חדש מהיום"; }
 const lineFam = p => /פנסי/.test(p || "") ? "pen" : /השתלמות|גמל|פיננס|השקעה|קופת/.test(p || "") ? "fin" : "ins";
 function opsLines(e) {
   return `<div>${e.lines.map(l => `<div class="opsl"><span class="dot ${l.open ? "open" : "done"}"></span><span><b style="color:var(--deep)">${esc(l.product || "")}</b>
@@ -794,7 +803,7 @@ function dealSheet(id, withComm) {
 const TITLES = { home: ["", "מצב חודשי"], ops: ["תפעול", ""], clients: ["לקוחות", ""], comm: ["העמלות שלי", ""] };
 function greeting() { const h = new Date().getHours(); return (h < 5 ? "לילה טוב" : h < 12 ? "בוקר טוב" : h < 17 ? "צהריים טובים" : h < 21 ? "ערב טוב" : "לילה טוב") + ", אדיר"; }
 function render() {
-  $("title").textContent = TITLES[tab][0] || greeting(); $("subtitle").textContent = TITLES[tab][1];
+  $("title").textContent = TITLES[tab][0] || greeting(); if ($("title").scrollWidth > $("title").clientWidth) $("title").textContent = $("title").textContent.replace(/,.*$/, "");   // too long beside the buttons: the greeting without the name $("subtitle").textContent = TITLES[tab][1];
   $("month").innerHTML = state.months.slice().reverse().map(m => `<option value="${m.month}" ${m.month === month ? "selected" : ""}>${monthName(m.month)}</option>`).join("");
   $("view").innerHTML = { home, ops, clients, comm }[tab]();
   if (tab === "ops") $("subtitle").textContent = opsSubtitle();
@@ -858,7 +867,7 @@ $("face").addEventListener("click", () => load("", true));
 $("enableFace").addEventListener("click", enableFace);
 $("enableFace2").addEventListener("click", enableFace);
 $("faceLater").addEventListener("click", () => { localStorage.setItem("salesdesk.faceLater", "1"); $("faceAsk").hidden = true; });
-$("refresh").addEventListener("click", async () => { const b = $("refresh"); b.classList.add("spin"); await load(""); b.classList.remove("spin"); });
+$("refresh").addEventListener("click", async () => { const b = $("refresh"); b.classList.add("spin"); await load("", false, true); b.classList.remove("spin"); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden && state) load(""); });
 // Keeps itself current: a phone (above all one opened from the home screen) holds on to an old copy of this page. On every start and every return to the app, the page asks the site for
 // its own newest copy (never from the cache); when that copy has another version stamp, this page reloads from it.
@@ -866,7 +875,7 @@ async function selfUpdate() {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (m && PAGE !== "e1fda2" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
+    if (m && PAGE !== "493b9b" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
       sessionStorage.setItem("salesdesk.reloaded." + m[1], "1");   // one try per version: never a reload loop
       location.replace(location.pathname + "?v=" + m[1]);
     }
@@ -893,6 +902,15 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) self
     if (y0 !== null && dy > 90) bg.hidden = true;
     y0 = null; dy = 0;
   });
+})();
+(() => {   // pull down at the very top: refresh
+  const el = $("ptr"); let y0 = null, dy = 0;
+  document.addEventListener("touchstart", e => { y0 = scrollY <= 0 && state && $("sheet").hidden && $("find").hidden && !document.body.style.position ? e.touches[0].clientY : null; dy = 0; }, { passive: true });
+  document.addEventListener("touchmove", e => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0);
+    el.style.opacity = Math.min(1, dy / 90); el.style.transform = `translateY(${Math.min(dy * .5, 56) - 50}px) rotate(${dy * 2}deg)`; }, { passive: true });
+  document.addEventListener("touchend", async () => {
+    if (y0 !== null && dy > 110) { el.style.transform = "translateY(6px)"; el.style.opacity = 1; el.textContent = "⟳"; el.classList.add("spin"); await load("", false, true); el.classList.remove("spin"); el.textContent = "↓"; }
+    el.style.opacity = 0; el.style.transform = ""; y0 = null; dy = 0; });
 })();
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}   // ask the phone not to clear the remembered key
 load("", faceSaved() && window.PublicKeyCredential ? "auto" : false);
