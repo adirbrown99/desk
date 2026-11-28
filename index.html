@@ -256,6 +256,12 @@ const money = v => v == null ? "" : Math.round(v).toLocaleString("he-IL") + " �
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const cls = a => a === "הצטרפות" ? "j" : a === "מינוי סוכן" ? "a" : a === "ניוד" ? "t" : "";
 const KEY = "salesdesk.keys";
+// The remembered unlock key is kept twice (localStorage and IndexedDB): a phone that clears one of them still finds the other.
+const idb = (mode, fn) => new Promise(res => { try {
+  const r = indexedDB.open("salesdesk", 1); r.onupgradeneeded = () => r.result.createObjectStore("k");
+  r.onsuccess = () => { const t = r.result.transaction("k", mode), q = fn(t.objectStore("k")); t.oncomplete = () => res(q && q.result); t.onerror = () => res(null); };
+  r.onerror = () => res(null); } catch (e) { res(null); } });
+const forget = () => { try { localStorage.removeItem(KEY); } catch (e) {} return idb("readwrite", st => st.delete("keys")); };
 // ---------- pairing: the Mac shows a QR code whose link carries a device key after "#" (a browser never sends that part anywhere). It is kept on this phone and mixed into the unlock key.
 const DKEY = "salesdesk.dk";
 (() => {
@@ -265,7 +271,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "1e84d6";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "736ddf";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -346,7 +352,9 @@ async function load(pass, useFace) {
   catch (e) { showLogin("לא הצלחתי להביא את הנתונים. בדוק חיבור."); return; }
   let keys = null;
   try {
-    const saved = JSON.parse(localStorage.getItem(KEY) || "null"), face = faceSaved();
+    let saved = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (!saved) { const b = await idb("readonly", st => st.get("keys")); if (b) { saved = JSON.parse(b); localStorage.setItem(KEY, b); } }
+    const face = faceSaved();
     if (pass) keys = await deriveKeys(pass, env);
     // "Remember on this device" wins: the app opens straight away. Face ID is for when it is not remembered (or after "נעילה").
     else if (saved && saved.salt === env.salt && useFace !== true) keys = { enc: unhex(saved.enc), mac: unhex(saved.mac), salt: saved.salt };
@@ -364,7 +372,7 @@ async function load(pass, useFace) {
     state = await open(env, keys);
   } catch (e) {
     if (e && e.message === "nodk") { showLogin("האייפון עוד לא מזווג. פתח את הקישור מקוד ה־QR שמוצג על מסך המחשב."); return; }
-    if (pass) localStorage.removeItem(KEY);   // a remembered key is dropped only after a wrong passphrase was typed, never on a hiccup
+    if (pass) await forget();   // a remembered key is dropped only after a wrong passphrase was typed, never on a hiccup
     if (useFace === true) localStorage.removeItem(FKEY);   // the passphrase changed since Face ID was set: it is set again after the next login
     showLogin(pass ? "סיסמה שגויה" : useFace === true ? "הסיסמה הוחלפה. צריך להיכנס שוב בסיסמה." : "המפתח השמור לא פתח את הנתונים (" + (e && e.message || "שגיאה") + ")");
     return;
@@ -373,11 +381,17 @@ async function load(pass, useFace) {
   const offerFace = !!(window.PublicKeyCredential && !faceSaved());
   $("faceSet").hidden = !offerFace;
   $("faceAsk").hidden = !(offerFace && !localStorage.getItem("salesdesk.faceLater"));
-  if ((pass || useFace) && $("remember").checked) localStorage.setItem(KEY, JSON.stringify({ enc: hex(keys.enc), mac: hex(keys.mac), salt: keys.salt }));
+  let kept = "";
+  if ((pass || useFace) && $("remember").checked) {
+    const js = JSON.stringify({ enc: hex(keys.enc), mac: hex(keys.mac), salt: keys.salt });
+    try { localStorage.setItem(KEY, js); } catch (e) {}
+    await idb("readwrite", st => st.put(js, "keys"));
+    kept = localStorage.getItem(KEY) === js ? "" : (await idb("readonly", st => st.get("keys"))) === js ? "" : "המפתח לא נשמר במכשיר";
+  }
   state.rows = state.rows.filter(r => !r.test); state.clients = state.clients.filter(c => !c.test);
   if (!state.months.some(m => m.month === month)) month = state.months[state.months.length - 1].month;
   $("login").hidden = true; $("app").hidden = false; $("nav").hidden = false; $("pass").value = "";
-  liveNote = "";
+  liveNote = kept;
   render();
   live();
 }
@@ -815,7 +829,7 @@ $("sheet").addEventListener("click", e => {
 });
 $("go").addEventListener("click", () => load($("pass").value));
 $("pass").addEventListener("keydown", e => { if (e.key === "Enter") load($("pass").value); });
-$("lock").addEventListener("click", () => { localStorage.removeItem(KEY); state = null; faceKeys = null; showLogin(""); });
+$("lock").addEventListener("click", () => { forget(); state = null; faceKeys = null; showLogin(""); });
 $("face").addEventListener("click", () => load("", true));
 $("enableFace").addEventListener("click", enableFace);
 $("enableFace2").addEventListener("click", enableFace);
@@ -828,7 +842,7 @@ async function selfUpdate() {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (m && PAGE !== "1e84d6" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
+    if (m && PAGE !== "736ddf" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
       sessionStorage.setItem("salesdesk.reloaded." + m[1], "1");   // one try per version: never a reload loop
       location.replace(location.pathname + "?v=" + m[1]);
     }
