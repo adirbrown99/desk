@@ -261,7 +261,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   <div class="card faceAsk" id="faceAsk" hidden><div class="row"><div><b>כניסה מהירה עם Face ID</b><div class="small">בלי להקליד סיסמה בכל כניסה</div></div>
     <button id="enableFace2">הפעלה</button></div><button class="later" id="faceLater">לא עכשיו</button></div>
   <section id="view"></section>
-  <div class="stamp"><span id="stamp"></span> · <button id="lock">נעילה</button><span id="faceSet" hidden> · <button id="enableFace">הפעלת Face ID</button></span></div>
+  <div class="stamp"><span id="stamp"></span> · <span id="vp"></span> · <button id="lock">נעילה</button><span id="faceSet" hidden> · <button id="enableFace">הפעלת Face ID</button></span></div>
 </main>
 <div class="find" id="find" hidden><div class="panel">
   <div class="findbar"><input id="findq" type="search" placeholder="שם, ת״ז או מקור" autocomplete="off" enterkeyhint="search"><button class="cancel" id="findClose">ביטול</button></div>
@@ -298,7 +298,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "b7b1d9";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "c6e4e4";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -962,7 +962,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "b7b1d9" || m[1] === PAGE) return false;
+    if (!m || PAGE === "c6e4e4" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -1031,17 +1031,25 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) self
     x0 = null; setTimeout(() => { sheetH = false; }, 30);
   });
 })();
-function kickViewport() {   // a home-screen app sometimes opens with a window shorter than the screen: the bar floats high and a band stays empty
-  if (navigator.standalone !== true) return;
-  const short = () => innerHeight < screen.height - 30 && innerWidth <= screen.width + 1;
-  if (!short()) return;
-  const m = document.querySelector('meta[name="viewport"]'), c = m.content;
-  m.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"; scrollTo(0, 0);   // dropping viewport-fit makes the page measure itself again
-  requestAnimationFrame(() => { m.content = c; setTimeout(() => { if (short() && !sessionStorage.getItem("salesdesk.vp")) { sessionStorage.setItem("salesdesk.vp", "1"); location.reload(); } }, 400); });
+// A home-screen app sometimes opens with a layout window shorter than the screen (a band of empty background under the page, the bar floating above it, then it drops when iOS corrects itself).
+// While that lasts, everything that hangs on the bottom edge is placed against the real screen height instead, so nothing moves when the window is corrected.
+function fitScreen() {
+  const nav = $("nav"), bg = $("sheet"), find = $("find");
+  const short = navigator.standalone === true && innerHeight < screen.height - 24 && innerWidth <= screen.width + 1;
+  document.documentElement.classList.toggle("short", short);
+  if (short) {
+    const probe = document.createElement("div"); probe.style.cssText = "position:fixed;padding-bottom:env(safe-area-inset-bottom);visibility:hidden"; document.body.appendChild(probe);
+    const safe = parseFloat(getComputedStyle(probe).paddingBottom) || 0; probe.remove();
+    nav.style.bottom = "auto"; nav.style.top = (screen.height - nav.offsetHeight - 12 - safe) + "px";
+    bg.style.bottom = "auto"; bg.style.height = screen.height + "px"; find.style.bottom = "auto"; find.style.height = screen.height + "px";
+  } else { nav.style.bottom = nav.style.top = bg.style.bottom = bg.style.height = find.style.bottom = find.style.height = ""; }
+  const st = $("vp"); if (st) st.textContent = innerHeight + "/" + screen.height + (short ? "!" : "");
 }
-["pageshow", "resize", "orientationchange"].forEach(t => addEventListener(t, () => setTimeout(kickViewport, 250)));
-document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(kickViewport, 250); });
-setTimeout(kickViewport, 500);
+["pageshow", "resize", "orientationchange", "focus"].forEach(t => addEventListener(t, () => { fitScreen(); setTimeout(fitScreen, 300); }));
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { fitScreen(); setTimeout(fitScreen, 300); } });
+document.addEventListener("touchstart", fitScreen, { passive: true });
+if (window.visualViewport) visualViewport.addEventListener("resize", fitScreen);
+setTimeout(fitScreen, 100); setTimeout(fitScreen, 800);
 const TABS = ["home", "ops", "clients", "comm"];
 function goTab(t, dir) {   // dir: +1 the screen leaves to the right (the next tab lies to the left), -1 the other way
   const v = $("view"); busy = true;
