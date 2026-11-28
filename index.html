@@ -256,7 +256,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     <div><h1 id="title"></h1><div class="sub" id="subtitle"></div></div>
     <div class="tools">
       <button class="icon" id="search" aria-label="חיפוש"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></button>
-      <button class="icon" id="refresh" aria-label="רענון"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 3v5h5"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 21v-5h-5"/></svg></button>
       <select class="month" id="month" aria-label="חודש"></select></div>
   </header>
   <div class="card faceAsk" id="faceAsk" hidden><div class="row"><div><b>כניסה מהירה עם Face ID</b><div class="small">בלי להקליד סיסמה בכל כניסה</div></div>
@@ -299,7 +298,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "6c604a";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "76d2c2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -953,7 +952,6 @@ $("face").addEventListener("click", () => load("", true));
 $("enableFace").addEventListener("click", enableFace);
 $("enableFace2").addEventListener("click", enableFace);
 $("faceLater").addEventListener("click", () => { localStorage.setItem("salesdesk.faceLater", "1"); $("faceAsk").hidden = true; });
-$("refresh").addEventListener("click", async () => { const b = $("refresh"); b.classList.add("spin"); if (await selfUpdate(true)) return; await load("", false, true); b.classList.remove("spin"); });
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) { hiddenAt = Date.now(); return; }
   if (state) { load(""); if (Date.now() - hiddenAt > 20000 && tab === "home") enter("month"); }   // back after a while: the figures and the ring count in again
@@ -964,7 +962,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "6c604a" || m[1] === PAGE) return false;
+    if (!m || PAGE === "76d2c2" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -1082,18 +1080,22 @@ let busy = false;
     setTimeout(() => { v.style.transition = ""; }, 260);
   });
 })();
-(() => {   // a long pull down at the very top refreshes (short pulls and sideways moves never do)
-  const el = $("ptr"); let x0 = null, y0 = null, dy = 0, off = false;
-  document.addEventListener("touchstart", e => { const t = e.touches[0]; off = false; dy = 0;
+(() => {   // a long pull down at the very top refreshes (a sideways move or a short pull never shows or does anything)
+  const el = $("ptr"); let x0 = null, y0 = null, dy = 0, mode = "";
+  const hide = () => { el.style.opacity = 0; el.style.transform = ""; };
+  document.addEventListener("touchstart", e => { const t = e.touches[0]; mode = ""; dy = 0; hide();
     y0 = scrollY <= 0 && state && !busy && $("sheet").hidden && $("find").hidden && !document.body.style.position ? t.clientY : null; x0 = t.clientX; }, { passive: true });
-  document.addEventListener("touchmove", e => { if (y0 === null || off) return; const t = e.touches[0], ddx = Math.abs(t.clientX - x0);
-    dy = Math.max(0, t.clientY - y0);
-    if (ddx > 18 && ddx > dy * .5) { off = true; el.style.opacity = 0; el.style.transform = ""; return; }   // a sideways move: not a refresh
-    const k = Math.max(0, dy - 60) / 160;   // nothing shows for the first 60px
+  document.addEventListener("touchmove", e => {
+    if (y0 === null || mode === "no") return;
+    const t = e.touches[0], ddx = t.clientX - x0, ddy = t.clientY - y0;
+    if (!mode) { if (Math.abs(ddx) < 10 && Math.abs(ddy) < 10) return; mode = ddy > 0 && Math.abs(ddy) > Math.abs(ddx) * 2 ? "pull" : "no"; if (mode === "no") { hide(); return; } }
+    if (Math.abs(ddx) > Math.abs(ddy) * .6) { mode = "no"; hide(); return; }   // it turned sideways
+    dy = Math.max(0, ddy);
+    const k = Math.max(0, dy - 70) / 170;   // nothing shows for the first 70px
     el.style.opacity = Math.min(1, k * 1.4); el.style.transform = `translateY(${Math.min(k * 70, 60) - 50}px) rotate(${k * 300}deg)`; }, { passive: true });
   document.addEventListener("touchend", async () => {
-    if (y0 !== null && !off && dy > 220) { if (await selfUpdate(true)) return; el.style.transform = "translateY(6px)"; el.style.opacity = 1; el.textContent = "⟳"; el.classList.add("spin"); await load("", false, true); el.classList.remove("spin"); el.textContent = "↓"; }
-    el.style.opacity = 0; el.style.transform = ""; y0 = null; dy = 0; });
+    if (y0 !== null && mode === "pull" && dy > 230) { if (await selfUpdate(true)) return; el.style.transform = "translateY(6px)"; el.style.opacity = 1; el.textContent = "⟳"; el.classList.add("spin"); await load("", false, true); el.classList.remove("spin"); el.textContent = "↓"; }
+    hide(); y0 = null; dy = 0; mode = ""; });
 })();
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}   // ask the phone not to clear the remembered key
 load("", faceSaved() && window.PublicKeyCredential ? "auto" : false);
