@@ -236,7 +236,7 @@ nav button.on { background: var(--fill); color: var(--gold-light); }
 * { scrollbar-width: none; -webkit-tap-highlight-color: transparent; } *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 input, textarea { -webkit-user-select: text; user-select: text; }
-#pager { position: relative; } #view { will-change: transform; } #peek { position: absolute; left: 0; right: 0; top: 0; will-change: transform; pointer-events: none; }
+#pager { position: relative; } #view { will-change: transform; } #peek, #peek2 { position: absolute; left: 0; right: 0; top: 0; visibility: hidden; will-change: transform; pointer-events: none; }
 /* loading: grey cards that shimmer until the first screen is ready; pull down from the top to refresh */
 .boot { padding: calc(env(safe-area-inset-top) + 70px) 14px 0; } .boot i { display: block; height: 130px; border-radius: 22px; margin-bottom: 12px; background: linear-gradient(100deg, rgba(255,255,255,.05) 30%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.05) 70%) 0 0 / 200% 100%; animation: shimmer 1.3s linear infinite; }
 .boot i:first-child { height: 230px; }
@@ -268,7 +268,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   </header>
   <div class="card faceAsk" id="faceAsk" hidden><div class="row"><div><b>כניסה מהירה עם Face ID</b><div class="small">בלי להקליד סיסמה בכל כניסה</div></div>
     <button id="enableFace2">הפעלה</button></div><button class="later" id="faceLater">לא עכשיו</button></div>
-  <div id="pager"><section id="view"></section><section id="peek" aria-hidden="true" hidden></section></div>
+  <div id="pager"><section id="view"></section><section id="peek" aria-hidden="true"></section><section id="peek2" aria-hidden="true"></section></div>
   <div class="stamp"><span id="stamp"></span> · <span id="vp"></span> · <button id="lock">נעילה</button><span id="faceSet" hidden> · <button id="enableFace">הפעלת Face ID</button></span></div>
 </main>
 <div class="find" id="find" hidden><div class="panel">
@@ -306,7 +306,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "11dbc2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "9361c1";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -897,7 +897,21 @@ function dealSheet(id, withComm) {
 const TITLES = { home: ["", "מצב חודשי"], ops: ["תפעול", ""], clients: ["לקוחות", ""], comm: ["העמלות שלי", ""] };
 function greeting() { const h = new Date().getHours(); return (h < 5 ? "לילה טוב" : h < 12 ? "בוקר טוב" : h < 17 ? "צהריים טובים" : h < 21 ? "ערב טוב" : "לילה טוב") + ", אדיר"; }
 function fitTitle() { const t = $("title"); if (t.scrollWidth > t.clientWidth + 1) t.textContent = t.textContent.replace(/,.*$/, ""); }   // too long beside the buttons: the greeting without the name
-function render() { header(); $("view").innerHTML = { home, ops, clients, comm }[tab](); if (tab === "ops") $("subtitle").textContent = opsSubtitle(); }
+let rv = 0;   // the screen's version: a neighbour built for an older one is built again
+function render() { header(); $("view").innerHTML = { home, ops, clients, comm }[tab](); if (tab === "ops") $("subtitle").textContent = opsSubtitle(); rv++; prepareSoon(); }
+// The neighbouring screens are drawn BEFORE the finger touches the phone, in idle time, and wait outside the view: the swipe only moves them (nothing is built or laid out while it runs).
+const peekFor = d => $(d > 0 ? "peek" : "peek2");
+function prepare() {
+  if (!state || $("app").hidden) return;
+  for (const d of [1, -1]) {
+    const el = peekFor(d), to = TABS[TABS.indexOf(tab) + d];
+    if (!to) { el.innerHTML = ""; el.dataset.t = ""; continue; }
+    if (el.dataset.t === to && el.dataset.rv === String(rv)) continue;
+    el.innerHTML = { home, ops, clients, comm }[to](); el.dataset.t = to; el.dataset.rv = String(rv);
+  }
+}
+let prepTimer = 0;
+function prepareSoon() { clearTimeout(prepTimer); prepTimer = setTimeout(() => (window.requestIdleCallback || setTimeout)(() => { try { prepare(); } catch (e) {} }, { timeout: 800 }), 350); }
 function header() {
   $("title").textContent = TITLES[tab][0] || greeting(); fitTitle(); document.fonts && document.fonts.ready.then(fitTitle);   // too long beside the buttons: the greeting without the name
   $("subtitle").textContent = tab === "ops" ? opsSubtitle() : todayLine(tab);
@@ -967,7 +981,7 @@ function landed(el, gold) {
 }
 $("month").addEventListener("change", e => { if (window.noteAction) noteAction("חודש"); month = e.target.value; render(); enter("month"); });
 $("nav").addEventListener("click", e => { const t = e.target.dataset.tab; if (t) { if (window.noteAction) noteAction("לחיצה על הלשונית"); tab = t; commView = "summary"; render(); enter(); scrollTo(0, 0); } });
-$("view").addEventListener("click", e => {
+$("pager").addEventListener("click", e => {
   const at = sel => e.target.closest(sel);
   let x;
   if ((x = at("[data-cclient]"))) return openClient(x.dataset.cclient, true);
@@ -1022,7 +1036,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "11dbc2" || m[1] === PAGE) return false;
+    if (!m || PAGE === "9361c1" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -1130,21 +1144,10 @@ setTimeout(fitScreen, 100); setTimeout(fitScreen, 800);
   });
 })();
 const TABS = ["home", "ops", "clients", "comm"];
-function goTab(t, dir) {   // dir: +1 the screen leaves to the right (the next tab lies to the left), -1 the other way
-  const v = $("view"); busy = true;
-  v.style.transition = "transform .17s ease-in"; v.style.transform = `translateX(${dir * 108}%)`;
-  setTimeout(() => {
-    tab = t; commView = "summary"; v.classList.remove("in"); render(); scrollTo(0, 0);   // the heavy drawing happens while nothing is visible
-    v.style.transition = "none"; v.style.transform = `translateX(${-dir * 32}%)`; void v.offsetWidth;
-    v.style.transition = "transform .3s cubic-bezier(.2,.85,.25,1)"; v.style.transform = "";
-    growRings(); enter("month");
-    setTimeout(() => { v.style.transition = ""; busy = false; }, 320);
-  }, 170);
-}
 let busy = false;
 function settleUI() {
   const v = $("view"), box = $("sheetBody"), back = $("sheetBack");
-  v.style.transition = v.style.transform = v.style.opacity = ""; { const pk = $("peek"); pk.hidden = true; pk.innerHTML = ""; pk.dataset.t = ""; pk.style.transition = pk.style.transform = ""; }
+  v.style.transition = v.style.transform = v.style.opacity = ""; for (const id of ["peek", "peek2"]) { const pk = $(id); pk.style.visibility = ""; pk.style.transition = pk.style.transform = ""; }
   [...box.children].forEach(c => { c.style.transform = ""; c.style.opacity = ""; });
   box.style.transition = box.style.transform = ""; back.style.transition = back.style.transform = back.style.opacity = ""; back.hidden = true;
   $("sheet").style.removeProperty("--dim"); $("ptr").style.opacity = 0; $("ptr").style.transform = "";
@@ -1155,22 +1158,23 @@ addEventListener("pageshow", settleUI);
 document.addEventListener("visibilitychange", () => { if (document.hidden) settleUI(); else setTimeout(settleUI, 50); });
 addEventListener("blur", settleUI);
 settleUI();
-(() => {   // a finger swipe sideways: the neighbouring screen comes in beside this one and both follow the finger; releasing completes or cancels the move
-  const v = $("view"), pk = $("peek"), pager = $("pager"); let x0 = null, y0 = null, dx = 0, mode = "", lx = 0, vx = 0, t0 = 0, W = 1;
+(() => {   // a finger swipe sideways: the neighbouring screen (built beforehand) comes in beside this one and both follow the finger; releasing completes or cancels the move
+  const pager = $("pager"); let x0 = null, y0 = null, dx = 0, mode = "", lx = 0, vx = 0, t0 = 0, W = 1, lastT = 0, cur = null;
   const free = () => state && !busy && !$("app").hidden && $("sheet").hidden && $("find").hidden;
-  const place = () => { pk.style.top = Math.max(0, -pager.getBoundingClientRect().top) + "px"; };
+  const hide = el => { el.style.visibility = ""; el.style.transition = el.style.transform = ""; };
   const ensure = d => {   // d: +1 next tab (lies to the left), -1 previous (lies to the right)
-    const to = TABS[TABS.indexOf(tab) + d];
-    if (!to) { pk.hidden = true; pk.dataset.t = ""; return null; }
-    if (pk.dataset.t !== to) { pk.innerHTML = { home, ops, clients, comm }[to](); pk.dataset.t = to; place(); }
-    pk.hidden = false; return to;
+    const to = TABS[TABS.indexOf(tab) + d], el = peekFor(d);
+    if (cur && cur !== el) hide(cur);
+    if (!to) { cur = null; return null; }
+    if (el.dataset.t !== to || el.dataset.rv !== String(rv)) { el.innerHTML = { home, ops, clients, comm }[to](); el.dataset.t = to; el.dataset.rv = String(rv); }   // only if it was not ready
+    el.style.top = Math.max(0, -pager.getBoundingClientRect().top) + "px"; el.style.visibility = "visible"; cur = el; return to;
   };
-  let lastT = 0;
   document.addEventListener("touchstart", e => {
     const t = e.touches[0]; x0 = null;
     if (!free() || e.target.closest(".chips, .tpick, select, input, textarea") || t.clientX < 24 || t.clientX > innerWidth - 24) return;
-    x0 = t.clientX; y0 = t.clientY; dx = 0; mode = ""; lx = x0; vx = 0; t0 = lastT = performance.now(); W = pager.clientWidth || innerWidth;
-    // The move and the end are heard on the touched element itself: if the screen under the finger is redrawn during the gesture, a document listener would never hear the end (the screen stayed half way).
+    x0 = t.clientX; y0 = t.clientY; dx = 0; mode = ""; lx = x0; vx = 0; t0 = lastT = performance.now(); W = pager.clientWidth || innerWidth; cur = null;
+    prepare();   // normally nothing to do: the neighbours were built after the screen was drawn
+    // The move and the end are heard on the touched element itself: if the screen under the finger is redrawn during the gesture, a document listener would never hear the end.
     const tg = e.target, off = () => { tg.removeEventListener("touchmove", onMove); tg.removeEventListener("touchend", end); tg.removeEventListener("touchcancel", end); };
     const end = ev => { off(); if (ev.type === "touchcancel") { dx = 0; vx = 0; } onEnd(); };
     tg.addEventListener("touchmove", onMove, { passive: false }); tg.addEventListener("touchend", end); tg.addEventListener("touchcancel", end);
@@ -1178,35 +1182,40 @@ settleUI();
   const onMove = e => {
     lastT = performance.now();
     if (x0 === null) return;
-    const t = e.touches[0], ddx = t.clientX - x0, ddy = t.clientY - y0, now = performance.now();
+    const t = e.touches[0], ddx = t.clientX - x0, ddy = t.clientY - y0, now = performance.now(), v = $("view");
     if (!mode) { if (Math.abs(ddx) > 12 && Math.abs(ddx) > Math.abs(ddy) * 1.6) mode = "h"; else if (Math.abs(ddy) > 12) { x0 = null; return; } else return; }
     e.preventDefault(); dx = ddx; vx = (t.clientX - lx) / Math.max(1, now - t0); lx = t.clientX; t0 = now;
     const d = dx > 0 ? 1 : -1, to = ensure(d);
-    v.style.transition = pk.style.transition = "none";
+    v.style.transition = "none";
     if (!to) { v.style.transform = `translateX(${dx / 4}px)`; return; }   // the first and last tab resist
-    v.style.transform = `translateX(${dx}px)`; pk.style.transform = `translateX(${(d > 0 ? -W : W) + dx}px)`;
+    cur.style.transition = "none"; v.style.transform = `translateX(${dx}px)`; cur.style.transform = `translateX(${(d > 0 ? -W : W) + dx}px)`;
   };
   const onEnd = () => {
+    const v = $("view");
     if (x0 === null || mode !== "h") { x0 = null; return; }
     x0 = null; const d = dx > 0 ? 1 : -1, to = TABS[TABS.indexOf(tab) + d];
-    const go = to && (Math.abs(dx) > W * .28 || (Math.abs(dx) > 30 && Math.abs(vx) > .5));
+    const go = to && cur && (Math.abs(dx) > W * .28 || (Math.abs(dx) > 30 && Math.abs(vx) > .5));
     const ease = "transform .3s cubic-bezier(.2,.85,.25,1)";
     if (!go) {
-      v.style.transition = ease; v.style.transform = ""; if (!pk.hidden) { pk.style.transition = ease; pk.style.transform = `translateX(${d > 0 ? -W : W}px)`; }
-      setTimeout(() => { v.style.transition = ""; pk.hidden = true; pk.innerHTML = ""; pk.dataset.t = ""; pk.style.transition = pk.style.transform = ""; }, 320);
+      v.style.transition = ease; v.style.transform = ""; const el = cur;
+      if (el) { el.style.transition = ease; el.style.transform = `translateX(${d > 0 ? -W : W}px)`; }
+      setTimeout(() => { v.style.transition = ""; if (el) hide(el); }, 320); cur = null;
       return;
     }
     busy = true; if (window.noteAction) noteAction("מעבר לשונית");
-    v.style.transition = pk.style.transition = ease; v.style.transform = `translateX(${d > 0 ? W : -W}px)`; pk.style.transform = "translateX(0)";
+    const nu = cur; cur = null;
+    v.style.transition = nu.style.transition = ease; v.style.transform = `translateX(${d > 0 ? W : -W}px)`; nu.style.transform = "translateX(0)";
     tab = to; commView = "summary"; header();   // the title, the month menu and the bar already say where it is going
     setTimeout(() => {
-      const beforeTop = pk.getBoundingClientRect().top;
-      v.style.transition = "none"; v.innerHTML = pk.innerHTML; v.style.transform = "";   // the real screen takes the neighbour's place: the same picture, nothing jumps
-      pk.hidden = true; pk.innerHTML = ""; pk.dataset.t = ""; pk.style.transition = pk.style.transform = "";
-      v.classList.remove("in"); scrollTo(0, Math.min(scrollY, pager.getBoundingClientRect().top + scrollY)); if (tab === "ops") $("subtitle").textContent = opsSubtitle();   // the new screen lands where the neighbour was: no jump of the page
-      const dy = beforeTop - v.getBoundingClientRect().top;      // the page had to settle (a shorter screen cannot stay scrolled): glide there instead of jumping
-      if (Math.abs(dy) > 2) { v.style.transform = `translateY(${dy}px)`; void v.offsetWidth; v.style.transition = "transform .28s cubic-bezier(.2,.85,.25,1)"; v.style.transform = ""; setTimeout(() => { v.style.transition = ""; }, 300); }
-      growRings(); enter("month"); busy = false; if (Math.abs(dy) <= 2) v.style.transition = "";
+      // The finished neighbour BECOMES the screen (the two swap places): nothing is built, nothing is copied, nothing jumps. The old screen becomes the spare.
+      const old = $("view"), pid = nu.id, beforeTop = nu.getBoundingClientRect().top;
+      old.style.transition = nu.style.transition = "none"; old.style.transform = nu.style.transform = ""; nu.style.top = ""; nu.style.visibility = "";
+      old.id = pid; nu.id = "view"; old.style.visibility = ""; old.innerHTML = ""; old.dataset.t = ""; old.dataset.rv = "";
+      const nv = $("view"); nv.classList.remove("in");
+      scrollTo(0, Math.min(scrollY, pager.getBoundingClientRect().top + scrollY)); if (tab === "ops") $("subtitle").textContent = opsSubtitle();   // the new screen lands where the neighbour was: no page jump
+      const dy = beforeTop - nv.getBoundingClientRect().top;      // the page had to settle (a shorter screen cannot stay scrolled): glide there instead of jumping
+      if (Math.abs(dy) > 2) { nv.style.transform = `translateY(${dy}px)`; void nv.offsetWidth; nv.style.transition = "transform .28s cubic-bezier(.2,.85,.25,1)"; nv.style.transform = ""; setTimeout(() => { nv.style.transition = ""; }, 300); } else nv.style.transition = "";
+      growRings(); enter("month"); busy = false; prepareSoon();
     }, 310);
   };
   setInterval(() => { if (x0 !== null && mode === "h" && performance.now() - lastT > 3000) { x0 = null; mode = ""; settleUI(); } }, 1000);   // a gesture that never ended heals itself
