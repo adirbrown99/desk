@@ -265,7 +265,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "f84a3b";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "614b47";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -450,7 +450,7 @@ const FIN = new Set(["השתלמות", "גמל", "גמל להשקעה"]);
 const initials = n => String(n || "").split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("");
 const daysAgo = d => { if (!d) return null; const t = new Date(String(d).slice(0, 10)); return isNaN(t) ? null : Math.max(0, Math.floor((Date.now() - t) / 86400000)); };
 function areasOf(rows) {
-  const ok = rows.filter(r => !r.stale && !r.test);
+  const ord = clientOrder(), ok = newest(rows.filter(r => !r.stale && !r.test), r => ord[r.clientId] || r.order || 0);   // newest first, like the Mac report
   const pen = ok.filter(r => r.product === "פנסיה"), fin = ok.filter(r => FIN.has(r.product || "")), ins = ok.filter(r => r.product !== "פנסיה" && !FIN.has(r.product || ""));
   const dep = r => r.deposit != null ? r.deposit : r.salary != null ? r.salary * 0.185 : 0;
   return { ins, fin, pen,
@@ -823,7 +823,7 @@ async function selfUpdate() {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (m && PAGE !== "f84a3b" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
+    if (m && PAGE !== "614b47" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
       sessionStorage.setItem("salesdesk.reloaded." + m[1], "1");   // one try per version: never a reload loop
       location.replace(location.pathname + "?v=" + m[1]);
     }
