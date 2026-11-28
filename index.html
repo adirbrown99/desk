@@ -195,7 +195,7 @@ tr.on td { color: var(--emerald); font-weight: 700; }
 .st.ISSUED, .st.APPT_DONE { background: rgba(110,231,183,.18); color: #6ee7b7; } .st.MISSING, .st.AWAIT_SIGN { background: rgba(244,169,138,.22); color: #fac8b0; }
 .st.PROCESS, .st.UNDERWRITING { background: rgba(138,180,255,.2); color: #8ab4ff; } .st.CONFLICT { background: rgba(239,68,68,.22); color: #ff9a9a; } .st.UNKNOWN { background: rgba(255,255,255,.08); color: var(--muted); }
 .polink { display: inline-block; margin-top: 7px; font-size: 13px; font-weight: 700; color: var(--gold-light); text-decoration: none; background: rgba(244,169,138,.14); padding: 5px 11px; border-radius: 999px; }
-.ministats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; } .ministats .card { margin: 0; }
+.ministats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; } .ministats .card { margin: 0; } .ministats .card:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .sheet h4 { margin: 14px 2px 6px; font-size: 15px; color: var(--deep); }
 nav {
   position: fixed; inset: auto 12px calc(env(safe-area-inset-bottom) + 12px); display: flex; gap: 2px; padding: 5px;
@@ -290,7 +290,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "493b9b";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "146830";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -802,8 +802,9 @@ function dealSheet(id, withComm) {
 
 const TITLES = { home: ["", "מצב חודשי"], ops: ["תפעול", ""], clients: ["לקוחות", ""], comm: ["העמלות שלי", ""] };
 function greeting() { const h = new Date().getHours(); return (h < 5 ? "לילה טוב" : h < 12 ? "בוקר טוב" : h < 17 ? "צהריים טובים" : h < 21 ? "ערב טוב" : "לילה טוב") + ", אדיר"; }
+function fitTitle() { const t = $("title"); if (t.scrollWidth > t.clientWidth + 1) t.textContent = t.textContent.replace(/,.*$/, ""); }   // too long beside the buttons: the greeting without the name
 function render() {
-  $("title").textContent = TITLES[tab][0] || greeting(); if ($("title").scrollWidth > $("title").clientWidth) $("title").textContent = $("title").textContent.replace(/,.*$/, "");   // too long beside the buttons: the greeting without the name $("subtitle").textContent = TITLES[tab][1];
+  $("title").textContent = TITLES[tab][0] || greeting(); fitTitle(); document.fonts && document.fonts.ready.then(fitTitle);   // too long beside the buttons: the greeting without the name $("subtitle").textContent = TITLES[tab][1];
   $("month").innerHTML = state.months.slice().reverse().map(m => `<option value="${m.month}" ${m.month === month ? "selected" : ""}>${monthName(m.month)}</option>`).join("");
   $("view").innerHTML = { home, ops, clients, comm }[tab]();
   if (tab === "ops") $("subtitle").textContent = opsSubtitle();
@@ -875,7 +876,7 @@ async function selfUpdate() {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (m && PAGE !== "493b9b" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
+    if (m && PAGE !== "146830" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
       sessionStorage.setItem("salesdesk.reloaded." + m[1], "1");   // one try per version: never a reload loop
       location.replace(location.pathname + "?v=" + m[1]);
     }
