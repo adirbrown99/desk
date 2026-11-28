@@ -51,7 +51,7 @@ h1 { font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: elli
 /* motion: a sheet slides up over a fading dim, a screen rises in, a pressed card dips */
 .sheet.back { position: absolute; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none; transform-origin: 50% 100%; animation: none !important; }
 #sheetBody { position: relative; z-index: 1; }
-.spk { position: absolute; pointer-events: none; z-index: 2; line-height: 1; text-shadow: 0 0 8px rgba(255,235,170,.9); }
+.spk { opacity: 0; position: absolute; pointer-events: none; z-index: 2; line-height: 1; text-shadow: 0 0 8px rgba(255,235,170,.9); }
 .goldcard { position: relative; overflow: hidden; }
 @keyframes sweep { 0% { transform: translateX(-130%) skewX(-18deg); opacity: 0; } 12% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(380%) skewX(-18deg); opacity: 0; } }
 .goldcard.shine::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 28%; opacity: 0; background: linear-gradient(100deg, transparent, rgba(255,255,255,.6), transparent); animation: sweep 1s ease-out forwards; pointer-events: none; }
@@ -302,7 +302,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "7076ad";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "1db3d2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -925,7 +925,7 @@ function landed(el, gold) {
     host.appendChild(s);
     const a = i / n * 2 * Math.PI + (i % 3) * .4, r = (gold ? 74 : 52) * (i % 2 ? .72 : 1);
     s.animate([{ transform: "translate(-50%,-50%) scale(0)", opacity: 1 }, { transform: `translate(calc(-50% + ${Math.cos(a) * r * 1.5}px), calc(-50% + ${Math.sin(a) * r * .8}px)) scale(1)`, opacity: 1, offset: .45 },
-      { transform: `translate(calc(-50% + ${Math.cos(a) * r * 1.9}px), calc(-50% + ${Math.sin(a) * r}px)) scale(.2)`, opacity: 0 }], { duration: 850, easing: "ease-out" }); setTimeout(() => s.remove(), 1000);
+      { transform: `translate(calc(-50% + ${Math.cos(a) * r * 1.9}px), calc(-50% + ${Math.sin(a) * r}px)) scale(.2)`, opacity: 0 }], { duration: 850, easing: "ease-out", fill: "both" }); setTimeout(() => s.remove(), 900);
   }
   if (gold) { const card = el.closest(".goldcard"); card.classList.remove("shine"); void card.offsetWidth; card.classList.add("shine"); setTimeout(() => card.classList.remove("shine"), 1150); card.animate([{ transform: "scale(1)" }, { transform: "scale(1.035)", offset: .4 }, { transform: "scale(1)" }], { duration: 420, easing: "cubic-bezier(.3,1.4,.5,1)" }); }
 }
@@ -986,7 +986,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "7076ad" || m[1] === PAGE) return false;
+    if (!m || PAGE === "1db3d2" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
