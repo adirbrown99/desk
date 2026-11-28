@@ -37,7 +37,8 @@ body::before {
               linear-gradient(180deg, #14142b, #24224a);
 }
 .num { font-family: ui-rounded, -apple-system, system-ui; font-variant-numeric: tabular-nums; }
-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 10px; margin-bottom: 14px; }
+header #subtitle { flex: 0 0 100%; order: 3; margin: 0; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 header > div:first-child { min-width: 0; }
 h1 { font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; margin: 0; color: var(--deep); font-weight: 800; letter-spacing: -.3px; }
 .sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
@@ -233,7 +234,7 @@ nav button.on { background: var(--fill); color: var(--gold-light); }
 * { scrollbar-width: none; -webkit-tap-highlight-color: transparent; } *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 input, textarea { -webkit-user-select: text; user-select: text; }
-#view { will-change: transform; }
+#pager { position: relative; } #view { will-change: transform; } #peek { position: absolute; left: 0; right: 0; top: 0; will-change: transform; pointer-events: none; }
 /* loading: grey cards that shimmer until the first screen is ready; pull down from the top to refresh */
 .boot { padding: calc(env(safe-area-inset-top) + 70px) 14px 0; } .boot i { display: block; height: 130px; border-radius: 22px; margin-bottom: 12px; background: linear-gradient(100deg, rgba(255,255,255,.05) 30%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.05) 70%) 0 0 / 200% 100%; animation: shimmer 1.3s linear infinite; }
 .boot i:first-child { height: 230px; }
@@ -257,14 +258,15 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 </div>
 <main id="app" hidden>
   <header>
-    <div><h1 id="title"></h1><div class="sub" id="subtitle"></div></div>
+    <div><h1 id="title"></h1></div>
     <div class="tools">
       <button class="icon" id="search" aria-label="חיפוש"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></button>
       <select class="month" id="month" aria-label="חודש"></select></div>
+    <div class="sub" id="subtitle"></div>
   </header>
   <div class="card faceAsk" id="faceAsk" hidden><div class="row"><div><b>כניסה מהירה עם Face ID</b><div class="small">בלי להקליד סיסמה בכל כניסה</div></div>
     <button id="enableFace2">הפעלה</button></div><button class="later" id="faceLater">לא עכשיו</button></div>
-  <section id="view"></section>
+  <div id="pager"><section id="view"></section><section id="peek" aria-hidden="true" hidden></section></div>
   <div class="stamp"><span id="stamp"></span> · <span id="vp"></span> · <button id="lock">נעילה</button><span id="faceSet" hidden> · <button id="enableFace">הפעלת Face ID</button></span></div>
 </main>
 <div class="find" id="find" hidden><div class="panel">
@@ -302,7 +304,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "1db3d2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "233dea";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -644,7 +646,10 @@ const CATS = { sign: "לחתימה", mine: "בטיפולי", company: "אצל ה
 const opsList = () => state.ops || [];
 const opsMatch = (e, f) => f === "all" || (f === "mine" ? e.cat === "mine" || e.cat === "sign" : f === "new" ? e.isNew : e.cat === f);
 const famCount = f => opsList().filter(e => (e.fams || []).includes(f)).length;
-function opsSubtitle() { const n = opsList().filter(e => e.isNew).length; return n === 1 ? "לקוח חדש מהיום" : n ? n + " לקוחות חדשים מהיום" : "אין חדש מהיום"; }
+function opsSubtitle() {   // new today, and updates today (a client already there that got something newer)
+  const l = opsList(), n = l.filter(e => e.isNew).length, u = l.filter(e => !e.isNew && e.updated).length;
+  return n + u ? [n ? n + " חדשים" : "", u ? u + " עדכונים" : ""].filter(Boolean).join(" · ") + " מהיום" : "אין חדש מהיום";
+}
 const lineFam = p => /פנסי/.test(p || "") ? "pen" : /השתלמות|גמל|פיננס|השקעה|קופת/.test(p || "") ? "fin" : "ins";
 function opsLines(e) {
   const own = tab === "ops" ? e.lines.filter(l => lineFam(l.product) === opsFam) : e.lines;   // from the Operations tab: only that tab's own products, as on the Mac
@@ -886,15 +891,36 @@ function dealSheet(id, withComm) {
 const TITLES = { home: ["", "מצב חודשי"], ops: ["תפעול", ""], clients: ["לקוחות", ""], comm: ["העמלות שלי", ""] };
 function greeting() { const h = new Date().getHours(); return (h < 5 ? "לילה טוב" : h < 12 ? "בוקר טוב" : h < 17 ? "צהריים טובים" : h < 21 ? "ערב טוב" : "לילה טוב") + ", אדיר"; }
 function fitTitle() { const t = $("title"); if (t.scrollWidth > t.clientWidth + 1) t.textContent = t.textContent.replace(/,.*$/, ""); }   // too long beside the buttons: the greeting without the name
-function render() {
-  $("title").textContent = TITLES[tab][0] || greeting(); fitTitle(); document.fonts && document.fonts.ready.then(fitTitle);   // too long beside the buttons: the greeting without the name $("subtitle").textContent = TITLES[tab][1];
+function render() { header(); $("view").innerHTML = { home, ops, clients, comm }[tab](); if (tab === "ops") $("subtitle").textContent = opsSubtitle(); }
+function header() {
+  $("title").textContent = TITLES[tab][0] || greeting(); fitTitle(); document.fonts && document.fonts.ready.then(fitTitle);   // too long beside the buttons: the greeting without the name
+  $("subtitle").textContent = tab === "ops" ? opsSubtitle() : todayLine(tab);
+
   $("month").innerHTML = state.months.slice().reverse().map(m => `<option value="${m.month}" ${m.month === month ? "selected" : ""}>${monthName(m.month)}</option>`).join("");
-  $("view").innerHTML = { home, ops, clients, comm }[tab]();
   if (tab === "ops") $("subtitle").textContent = opsSubtitle();
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
   $("stamp").textContent = "Mac: " + state.generatedAt.replace("T", " ").slice(5, 16) + (liveNote ? " · " + liveNote : "") + " · v" + PAGE;
 }
 
+// One short line under the title says what came in today. "Today" is the day the app first took a client or a row in (the report carries no sale date per row).
+const dayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const shortNum = v => { v = Math.round(v); return v >= 1e6 ? (Math.round(v / 1e5) / 10) + "M" : v >= 1e5 ? Math.round(v / 1000) + "K" : v.toLocaleString("he-IL"); };
+function todayLine(kind) {
+  const t = dayKey(), rows = state.rows.filter(r => r.addedOn === t && !r.test), cl = state.clients.filter(c => c.addedOn === t && !c.test);
+  if (kind === "home") {
+    if (!rows.length) return "היום · עוד לא הוקם כלום";
+    const A = areasOf(rows), prem = A.ins.filter(r => r.action === "הצטרפות").reduce((s, r) => s + (r.premium || 0), 0), pens = A.pen.filter(r => r.action !== "מינוי סוכן").length;
+    const parts = [prem > 0 && `${shortNum(prem)} פרמיה`, pens > 0 && `${pens} פנסיות`, A.financeRaised > 0 && `${shortNum(A.financeRaised)} פיננסים`].filter(Boolean);   // only what there is: no zeros
+    return "היום · " + (parts.length ? parts.join(" · ") : `${rows.length} עסקאות`);
+  }
+  if (kind === "clients") return cl.length ? `${cl.length} נוספו היום` : "אין חדש";
+  if (kind === "comm") {
+    const sc = rows.reduce((s, r) => s + (r.commission.scope || 0), 0), tr = rows.reduce((s, r) => s + (r.commission.trailing || 0), 0);
+    const parts = [sc > 0 && `${shortNum(sc)} היקף`, tr > 0 && `${shortNum(tr)} נפרעים`].filter(Boolean);
+    return parts.length ? "היום · " + parts.join(" · ") : "אין עמלה חדשה היום";
+  }
+  return "";
+}
 figureList = stacked(figureList); prodSheet = stacked(prodSheet); figureSheet = stacked(figureSheet); clientSheet = stacked(clientSheet); dealSheet = stacked(dealSheet);
 function enter(kind) {   // a tab change: the content rises in. Any change: the hero figures count to their values (a month change keeps the screen where it is)
   const v = $("view"); v.classList.remove("in");
@@ -986,7 +1012,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "1db3d2" || m[1] === PAGE) return false;
+    if (!m || PAGE === "233dea" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -1089,7 +1115,7 @@ function goTab(t, dir) {   // dir: +1 the screen leaves to the right (the next t
 let busy = false;
 function settleUI() {
   const v = $("view"), box = $("sheetBody"), back = $("sheetBack");
-  v.style.transition = v.style.transform = v.style.opacity = "";
+  v.style.transition = v.style.transform = v.style.opacity = ""; { const pk = $("peek"); pk.hidden = true; pk.innerHTML = ""; pk.dataset.t = ""; pk.style.transition = pk.style.transform = ""; }
   [...box.children].forEach(c => { c.style.transform = ""; c.style.opacity = ""; });
   box.style.transition = box.style.transform = ""; back.style.transition = back.style.transform = back.style.opacity = ""; back.hidden = true;
   $("sheet").style.removeProperty("--dim"); $("ptr").style.opacity = 0; $("ptr").style.transform = "";
@@ -1100,29 +1126,50 @@ addEventListener("pageshow", settleUI);
 document.addEventListener("visibilitychange", () => { if (document.hidden) settleUI(); else setTimeout(settleUI, 50); });
 addEventListener("blur", settleUI);
 settleUI();
-(() => {   // a finger swipe sideways on a main screen moves to the neighbouring tab, the screen following the finger
-  const v = $("view"); let x0 = null, y0 = null, dx = 0, mode = "", lx = 0, vx = 0, t0 = 0;
+(() => {   // a finger swipe sideways: the neighbouring screen comes in beside this one and both follow the finger; releasing completes or cancels the move
+  const v = $("view"), pk = $("peek"), pager = $("pager"); let x0 = null, y0 = null, dx = 0, mode = "", lx = 0, vx = 0, t0 = 0, W = 1;
   const free = () => state && !busy && !$("app").hidden && $("sheet").hidden && $("find").hidden;
+  const place = () => { pk.style.top = Math.max(0, -pager.getBoundingClientRect().top) + "px"; };
+  const ensure = d => {   // d: +1 next tab (lies to the left), -1 previous (lies to the right)
+    const to = TABS[TABS.indexOf(tab) + d];
+    if (!to) { pk.hidden = true; pk.dataset.t = ""; return null; }
+    if (pk.dataset.t !== to) { pk.innerHTML = { home, ops, clients, comm }[to](); pk.dataset.t = to; place(); }
+    pk.hidden = false; return to;
+  };
   document.addEventListener("touchstart", e => {
     const t = e.touches[0]; x0 = null;
     if (!free() || e.target.closest(".chips, .tpick, select, input, textarea") || t.clientX < 24 || t.clientX > innerWidth - 24) return;
-    x0 = t.clientX; y0 = t.clientY; dx = 0; mode = ""; lx = x0; vx = 0; t0 = performance.now();
+    x0 = t.clientX; y0 = t.clientY; dx = 0; mode = ""; lx = x0; vx = 0; t0 = performance.now(); W = pager.clientWidth || innerWidth;
   }, { passive: true });
   document.addEventListener("touchmove", e => {
     if (x0 === null) return;
     const t = e.touches[0], ddx = t.clientX - x0, ddy = t.clientY - y0, now = performance.now();
     if (!mode) { if (Math.abs(ddx) > 12 && Math.abs(ddx) > Math.abs(ddy) * 1.6) mode = "h"; else if (Math.abs(ddy) > 12) { x0 = null; return; } else return; }
     e.preventDefault(); dx = ddx; vx = (t.clientX - lx) / Math.max(1, now - t0); lx = t.clientX; t0 = now;
-    const i = TABS.indexOf(tab), ok = (dx > 0 && i < TABS.length - 1) || (dx < 0 && i > 0), pull = ok ? dx : dx / 4;   // the first and last tab resist
-    v.style.transition = "none"; v.style.transform = `translateX(${pull * .7}px)`;
+    const d = dx > 0 ? 1 : -1, to = ensure(d);
+    v.style.transition = pk.style.transition = "none";
+    if (!to) { v.style.transform = `translateX(${dx / 4}px)`; return; }   // the first and last tab resist
+    v.style.transform = `translateX(${dx}px)`; pk.style.transform = `translateX(${(d > 0 ? -W : W) + dx}px)`;
   }, { passive: false });
   document.addEventListener("touchend", () => {
     if (x0 === null || mode !== "h") { x0 = null; return; }
-    x0 = null; const i = TABS.indexOf(tab), dir = dx > 0 ? 1 : -1, to = TABS[i + dir];
-    const go = to && (Math.abs(dx) > 90 || (Math.abs(dx) > 30 && Math.abs(vx) > .5));
-    if (go) return goTab(to, dir);
-    v.style.transition = "transform .24s cubic-bezier(.2,.85,.25,1)"; v.style.transform = "";
-    setTimeout(() => { v.style.transition = ""; }, 260);
+    x0 = null; const d = dx > 0 ? 1 : -1, to = TABS[TABS.indexOf(tab) + d];
+    const go = to && (Math.abs(dx) > W * .28 || (Math.abs(dx) > 30 && Math.abs(vx) > .5));
+    const ease = "transform .3s cubic-bezier(.2,.85,.25,1)";
+    if (!go) {
+      v.style.transition = ease; v.style.transform = ""; if (!pk.hidden) { pk.style.transition = ease; pk.style.transform = `translateX(${d > 0 ? -W : W}px)`; }
+      setTimeout(() => { v.style.transition = ""; pk.hidden = true; pk.innerHTML = ""; pk.dataset.t = ""; pk.style.transition = pk.style.transform = ""; }, 320);
+      return;
+    }
+    busy = true;
+    v.style.transition = pk.style.transition = ease; v.style.transform = `translateX(${d > 0 ? W : -W}px)`; pk.style.transform = "translateX(0)";
+    tab = to; commView = "summary"; header();   // the title, the month menu and the bar already say where it is going
+    setTimeout(() => {
+      v.style.transition = "none"; v.innerHTML = pk.innerHTML; v.style.transform = "";   // the real screen takes the neighbour's place: the same picture, nothing jumps
+      pk.hidden = true; pk.innerHTML = ""; pk.dataset.t = ""; pk.style.transition = pk.style.transform = "";
+      v.classList.remove("in"); scrollTo(0, 0); if (tab === "ops") $("subtitle").textContent = opsSubtitle();
+      growRings(); enter("month"); busy = false; v.style.transition = "";
+    }, 310);
   });
 })();
 (() => {   // a long pull down at the very top refreshes (a sideways move or a short pull never shows or does anything)
