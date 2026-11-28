@@ -197,7 +197,10 @@ tr.on td { color: var(--emerald); font-weight: 700; }
 .st.ISSUED, .st.APPT_DONE { background: rgba(110,231,183,.18); color: #6ee7b7; } .st.MISSING, .st.AWAIT_SIGN { background: rgba(244,169,138,.22); color: #fac8b0; }
 .st.PROCESS, .st.UNDERWRITING { background: rgba(138,180,255,.2); color: #8ab4ff; } .st.CONFLICT { background: rgba(239,68,68,.22); color: #ff9a9a; } .st.UNKNOWN { background: rgba(255,255,255,.08); color: var(--muted); }
 .polink { display: inline-block; margin-top: 7px; font-size: 13px; font-weight: 700; color: var(--gold-light); text-decoration: none; background: rgba(244,169,138,.14); padding: 5px 11px; border-radius: 999px; }
-.ministats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; } .ministats .card { margin: 0; } .ministats .card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.ministats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; } .ministats .tile { margin: 0; min-height: 112px; text-align: right; font: inherit; color: var(--ink); width: 100%; display: flex; flex-direction: column; align-items: stretch; }
+.ministats .tile .top { display: flex; justify-content: space-between; align-items: center; } .ministats .tile .chev { color: var(--violet); font-weight: 800; }
+.ministats .tile .mid { font-size: 25px; margin: 4px 0 2px; } .ministats .tile .small { min-height: 15px; }
+.ministats .card { margin: 0; } .ministats .card:last-child:nth-child(odd), .ministats .tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .sheet h4 { margin: 14px 2px 6px; font-size: 15px; color: var(--deep); }
 nav {
   position: fixed; inset: auto 12px calc(env(safe-area-inset-bottom) + 12px); display: flex; gap: 2px; padding: 5px;
@@ -296,7 +299,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "f37aaa";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "6c604a";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -723,10 +726,44 @@ function filesLink(rel) {
 }
 const fmtDate = d => { const p = String(d || "").slice(0, 10).split("-"); return p.length === 3 ? `${p[2]}.${p[1]}.${p[0]}` : ""; };
 const sumsBy = (rows, key, val) => { const o = {}; rows.forEach(r => { const k = key(r) || "לא כתוב", v = val(r) || 0; if (v > 0) o[k] = (o[k] || 0) + v; }); return fold(o); };
+const tile = (t, v, lines, to) => `<button class="card tile" data-fl="${to}"><div class="top"><span class="label">${t}</span><span class="chev">‹</span></div><div class="mid num">${v}</div>${[0, 1].map(i => `<div class="small num">${(lines || [])[i] || "&nbsp;"}</div>`).join("")}</button>`;
 const mini = (t, v, lines) => `<div class="card"><div class="label">${t}</div><div class="mid num">${v}</div>${(lines || []).map(l => `<div class="small">${l}</div>`).join("")}</div>`;
 const listRows = (items) => items.map(it => `<button class="opsl" style="width:100%;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:right;display:flex;justify-content:space-between;align-items:center" data-client="${esc(it.clientId)}">
-  <span><b style="color:var(--deep)">${esc(it.client)}</b><br><span class="small">${esc(it.sub || "")}</span></span><b class="num">${it.val}</b></button>`).join("") || '<div class="small" style="padding:6px 2px">אין בחודש הזה</div>';
+  <span><b style="color:var(--deep)">${esc(it.client)}</b><br><span class="small">${esc(it.sub || "")}</span></span><span style="display:flex;align-items:center;gap:8px">${it.badge ? `<span class="st ${it.tone || ""}">${esc(it.badge)}</span>` : ""}<b class="num">${it.val}</b></span></button>`).join("") || '<div class="small" style="padding:6px 2px">אין בחודש הזה</div>';
 // Tapping a figure on the home hero opens its detail, as on the Mac: the month's totals, the breakdowns and the list of clients.
+function figureList(kind, which) {
+  const A = areasOf(state.rows.filter(r => r.month === month && !r.test)), by = r => `${r.product || ""}`, sub = r => [r.product, r.company].filter(Boolean).join(" · ");
+  const dep = r => r.deposit != null ? r.deposit : r.salary != null ? r.salary * 0.185 : 0, ord = clientOrder(), recent = rs => newest(rs, r => ord[r.clientId] || r.order || 0);
+  let title, items, total;
+  if (which === "sales") {
+    const rs = recent(A.ins.filter(r => r.action === "הצטרפות")); title = "פרמיה שנמכרה"; total = money(rs.reduce((t, r) => t + (r.premium || 0), 0));
+    items = rs.map(r => ({ clientId: r.clientId, client: r.client, sub: sub(r), val: money(r.premium), badge: r.issued === true ? "הופקה" : "לא הופקה", tone: r.issued === true ? "ISSUED" : "MISSING" }));
+  } else if (which === "appointments") {
+    const rs = recent(A.ins.filter(r => r.action === "מינוי סוכן")); title = "מינויים"; total = money(A.appointmentPremium);
+    items = rs.map(r => ({ clientId: r.clientId, client: r.client, sub: sub(r), val: money(r.premium) }));
+  } else if (which === "products") {
+    const rs = recent(A.ins); title = "כל המוצרים"; total = String(rs.length);
+    items = rs.map(r => ({ clientId: r.clientId, client: r.client, sub: sub(r), val: money(r.premium), badge: r.action, tone: r.action === "הצטרפות" ? "ISSUED" : "PROCESS" }));
+  } else if (which === "raised") {
+    const rs = recent(A.fin.filter(r => r.action !== "מינוי סוכן")); title = "גיוסים וניודים"; total = money(A.financeRaised);
+    items = rs.map(r => ({ clientId: r.clientId, client: r.client, sub: sub(r), val: money(r.amount), badge: r.action, tone: "PROCESS" }));
+  } else if (which === "deposits") {
+    const rs = recent(A.pen.filter(r => r.action !== "מינוי סוכן")); title = "הפקדות חודשיות"; total = money(A.pensionDeposit);
+    items = rs.map(r => ({ clientId: r.clientId, client: r.client, sub: [r.company, r.deposit == null && r.salary != null ? "משוער משכר" : ""].filter(Boolean).join(" · "), val: money(dep(r)) }));
+  } else if (which === "clients") {
+    const rs = recent(A.pen.filter(r => r.action !== "מינוי סוכן")), seen = new Map();
+    rs.forEach(r => { const e = seen.get(r.clientId) || { clientId: r.clientId, client: r.client, cos: new Set(), sum: 0 }; e.cos.add(r.company || ""); e.sum += dep(r); seen.set(r.clientId, e); });
+    title = "לקוחות פנסיה"; total = String(seen.size);
+    items = [...seen.values()].map(e => ({ clientId: e.clientId, client: e.client, sub: [...e.cos].filter(Boolean).join(" · "), val: money(e.sum) }));
+  } else { // finance appointments
+    const rs = recent(A.fin.filter(r => r.action === "מינוי סוכן")); title = "מינויי פיננסים"; total = money(A.financeAppointed);
+    items = rs.map(r => ({ clientId: r.clientId, client: r.client, sub: sub(r), val: money(r.amount) }));
+  }
+  $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:10px"><div class="row" style="justify-content:flex-start;gap:10px"><button class="back" id="listBack" style="padding:0">חזרה ›</button><div class="name" style="font-size:19px">${title}</div></div><button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>
+    <div class="row" style="margin-bottom:6px"><span class="small">${items.length} פריטים · ${monthName(month)}</span><span class="small">סה״כ <b class="num" style="color:var(--deep);font-size:16px">${total}</b></span></div>
+    <div class="card" style="padding:4px 8px">${listRows(items).replace("border-top:1px solid var(--line);", "")}</div>`;
+  $("sheet").hidden = false;
+}
 function figureSheet(kind) {
   const A = areasOf(state.rows.filter(r => r.month === month && !r.test));
   const fam = r => ["בריאות", "מחלות קשות", "בריאות + מחלות"].includes(r.product) ? "בריאות" : r.product;
@@ -735,20 +772,18 @@ function figureSheet(kind) {
     const sales = A.ins.filter(r => r.action === "הצטרפות"), done = sales.filter(r => r.issued === true), open = sales.filter(r => r.issued !== true);
     const sp = l => l.reduce((t, r) => t + (r.premium || 0), 0), apps = A.ins.filter(r => r.action === "מינוי סוכן");
     title = "פרמיה חודשית";
-    body = `<div class="ministats">${mini("סך פרמיה", money(sp(sales)), [`הופק ${money(sp(done))}`, `לא הופק ${money(sp(open))}`])}${mini("סך פרמיית מינויים", money(A.appointmentPremium), [apps.length + " מינויים"])}${mini("מוצרים", A.ins.length)}</div>
+    body = `<div class="ministats">${tile("סך פרמיה", money(sp(sales)), [`הופק ${money(sp(done))} · ${done.length}`, `לא הופק ${money(sp(open))} · ${open.length}`], "premium:sales")}${tile("פרמיית מינויים", money(A.appointmentPremium), [apps.length + " מינויים"], "premium:appointments")}${tile("מוצרים", A.ins.length, ["כל העסקאות של החודש"], "premium:products")}</div>
       ${breakdown("פרמיה לפי מוצר", premiumBy(A.ins, fam))}${breakdown("פרמיה לפי חברה", premiumBy(A.ins.filter(r => r.company), r => r.company))}`;
   } else if (kind === "finance") {
     const raise = A.fin.filter(r => r.action !== "מינוי סוכן"), apps = A.fin.filter(r => r.action === "מינוי סוכן");
-    title = "פיננסים";
-    body = `<div class="ministats">${mini("גויס (ניודים)", money(A.financeRaised))}${mini("מינויי פיננסים", money(A.financeAppointed))}</div>
-      ${breakdown("גיוס לפי חברה", sumsBy(raise, r => r.company, r => r.amount))}${breakdown("גיוס לפי מוצר", sumsBy(raise, r => r.product, r => r.amount))}
-      <h4>מינויי פיננסים שבוצעו</h4><div class="card">${listRows(apps.map(r => ({ clientId: r.clientId, client: r.client, sub: [r.product, r.company].filter(Boolean).join(" · "), val: money(r.amount) })))}</div>`;
+    title = "גיוסים";
+    body = `<div class="ministats">${tile("גויס (ניודים)", money(A.financeRaised), [raise.length + " ניודים"], "finance:raised")}${tile("מינויי פיננסים", money(A.financeAppointed), [apps.length + " מינויים"], "finance:appointments")}</div>
+      ${breakdown("גיוס לפי חברה", sumsBy(raise, r => r.company, r => r.amount))}${breakdown("גיוס לפי מוצר", sumsBy(raise, r => r.product, r => r.amount))}`;
   } else {
     const dep = r => r.deposit != null ? r.deposit : r.salary != null ? r.salary * 0.185 : 0, ps = A.pen.filter(r => r.action !== "מינוי סוכן");
-    title = "פנסיה";
-    body = `<div class="ministats">${mini("הפקדות חודשיות מגיוסים וניודים", money(A.pensionDeposit))}${mini("לקוחות", new Set(ps.map(r => r.clientId)).size)}</div>
-      ${breakdown("הפקדה חודשית לפי חברה", sumsBy(ps, r => r.company, dep))}
-      <h4>הפקדות</h4><div class="card">${listRows(ps.map(r => ({ clientId: r.clientId, client: r.client, sub: [r.company, r.deposit == null && r.salary != null ? "משוער משכר" : ""].filter(Boolean).join(" · "), val: money(dep(r)) })))}</div>`;
+    title = "פנסיות";
+    body = `${breakdown("הפקדה חודשית לפי חברה", sumsBy(ps, r => r.company, dep))}
+      <div class="ministats">${tile("הפקדות חודשיות", money(A.pensionDeposit), ["מגיוסים וניודים", ps.length + " הפקדות"], "pension:deposits")}${tile("לקוחות", new Set(ps.map(r => r.clientId)).size, ["עם הפקדה חודשית"], "pension:clients")}</div>`;
   }
   $("sheetBody").innerHTML = `<div class="row" style="margin-bottom:10px"><div class="name" style="font-size:19px">${title} <span class="small">${monthName(month)}</span></div><button class="close" id="closeSheet" aria-label="סגירה">✕</button></div>${body}`;
   $("sheet").hidden = false;
@@ -857,7 +892,7 @@ function render() {
   $("stamp").textContent = "Mac: " + state.generatedAt.replace("T", " ").slice(5, 16) + (liveNote ? " · " + liveNote : "") + " · v" + PAGE;
 }
 
-prodSheet = stacked(prodSheet); figureSheet = stacked(figureSheet); clientSheet = stacked(clientSheet); dealSheet = stacked(dealSheet);
+figureList = stacked(figureList); prodSheet = stacked(prodSheet); figureSheet = stacked(figureSheet); clientSheet = stacked(clientSheet); dealSheet = stacked(dealSheet);
 function enter(kind) {   // a tab change: the content rises in. Any change: the hero figures count to their values (a month change keeps the screen where it is)
   const v = $("view"); v.classList.remove("in");
   if (kind !== "month") { void v.offsetWidth; v.classList.add("in"); }
@@ -899,6 +934,8 @@ $("find").addEventListener("click", e => {
   if (e.target.id === "find" || e.target.id === "findClose") findClose();
 });
 $("sheet").addEventListener("click", e => {
+  const fl = e.target.closest("[data-fl]"); if (fl) { const [k, w] = fl.dataset.fl.split(":"); return figureList(k, w); }
+  if (e.target.id === "listBack") return closeSheet();
   const pf = e.target.closest("[data-prodfin]"), pw = e.target.closest("[data-prodwhich]");
   if (pf) { homeFin = pf.dataset.prodfin === "1"; prodSheet(); return render(); }
   if (pw) { prodWhich = pw.dataset.prodwhich; return prodSheet(); }
@@ -927,7 +964,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "f37aaa" || m[1] === PAGE) return false;
+    if (!m || PAGE === "6c604a" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
