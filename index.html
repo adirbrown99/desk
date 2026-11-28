@@ -48,6 +48,17 @@ h1 { font-size: 22px; line-height: 1.15; margin: 0; color: var(--deep); font-wei
 .icon:active { transform: scale(.94); }
 .icon.spin svg { animation: spin .9s linear infinite; color: var(--emerald); }
 @keyframes spin { to { transform: rotate(360deg); } }
+/* motion: a sheet slides up over a fading dim, a screen rises in, a pressed card dips */
+@keyframes up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes dim { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.sheet-bg:not([hidden]) { animation: dim .22s ease-out; }
+.sheet-bg:not([hidden]) .sheet { animation: up .3s cubic-bezier(.2,.85,.25,1); }
+#view.in > * { animation: rise .32s cubic-bezier(.2,.85,.25,1) both; }
+#view.in > *:nth-child(2) { animation-delay: .04s; } #view.in > *:nth-child(3) { animation-delay: .08s; } #view.in > *:nth-child(n+4) { animation-delay: .12s; }
+.cc, .pbox, .dealrow, .glass, nav button, .chips button, .seg button, .strip button { transition: transform .12s ease-out, background-color .2s; }
+.cc:active, .pbox:active, .dealrow:active, .hero .fig:active, .strip button:active, .chips button:active { transform: scale(.975); }
+@media (prefers-reduced-motion: reduce) { .sheet-bg:not([hidden]), .sheet-bg:not([hidden]) .sheet, #view.in > * { animation: none; } }
 .find { position: fixed; inset: 0; z-index: 6; background: rgba(8,8,24,.55); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
 .find .panel { background: rgba(27,26,58,.97); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); padding: calc(env(safe-area-inset-top) + 14px) 16px 14px; border-radius: 0 0 22px 22px; max-height: calc(var(--vh, 100dvh) - 24px); display: flex; flex-direction: column; }
 .find .findbar { display: flex; gap: 10px; align-items: center; }
@@ -64,7 +75,7 @@ select.month {
   background: var(--card); padding: 10px 12px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.07); direction: rtl;
 }
 .card { background: var(--card); border-radius: 18px; padding: 14px; margin-bottom: 10px; border: 1px solid var(--glass-edge);
-  box-shadow: 0 6px 18px rgba(0,0,0,.18); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
+  box-shadow: 0 4px 10px rgba(0,0,0,.18); }
 .dark { background: linear-gradient(135deg, #4b3fc4, #7b6cf6); border: 1px solid rgba(255,255,255,.08); color: #fff; box-shadow: 0 10px 26px rgba(123,108,246,.30); display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
 .dark .ttl { font-size: 16px; font-weight: 600; opacity: .9; }
 .dark .v { font-size: 44px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; margin-top: 6px; }
@@ -142,7 +153,7 @@ tr.on td { color: var(--emerald); font-weight: 700; }
 .waiting b { background: var(--fill); color: #fff; padding: 2px 11px; border-radius: 999px; }
 /* ---- the Mac app's look, phone-sized: glass cards with a soft top highlight, a hero with warm and cool glows, avatars, dotted status ---- */
 .glass { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)), var(--card); border: 1px solid rgba(255,255,255,.10); border-radius: 18px; padding: 15px; margin-bottom: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,.18); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
+  box-shadow: 0 4px 10px rgba(0,0,0,.18); }
 .hero { position: relative; border-radius: 22px; padding: 14px 14px 8px; margin-bottom: 12px; color: #fff; border: 1px solid rgba(255,255,255,.22);
   background: radial-gradient(120% 90% at 100% 0%, rgba(244,169,138,.40), transparent 60%), radial-gradient(110% 90% at 0% 100%, rgba(138,180,255,.32), transparent 62%), linear-gradient(135deg, #4b3fc4, #7b6cf6);
   box-shadow: 0 12px 30px rgba(123,108,246,.42); }
@@ -194,8 +205,8 @@ nav {
 nav button { flex: 1; border: 0; background: none; font: inherit; font-weight: 700; font-size: 13.5px; padding: 11px 2px; border-radius: 17px; color: var(--muted); }
 nav button.on { background: var(--fill); color: var(--gold-light); }
 .folder { display: block; text-align: center; text-decoration: none; font-weight: 700; font-size: 15px; padding: 11px; margin: 0 0 8px; border-radius: 13px; background: var(--fill); color: var(--gold-light); }
-.sheet-bg { position: fixed; inset: 0; background: rgba(8,8,24,.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); z-index: 5; display: flex; align-items: flex-end; }
-.sheet { overscroll-behavior: contain; background: rgba(27,26,58,.98); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); width: 100%; max-height: 86dvh; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 18px 16px calc(env(safe-area-inset-bottom) + 20px); }
+.sheet-bg { position: fixed; inset: 0; background: rgba(8,8,24,.6); z-index: 5; display: flex; align-items: flex-end; }
+.sheet { overscroll-behavior: contain; background: rgb(27,26,58); will-change: transform; width: 100%; max-height: 86dvh; overflow-y: auto; border-radius: 24px 24px 0 0; padding: 18px 16px calc(env(safe-area-inset-bottom) + 20px); }
 .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #4b3fc4, #7b6cf6); color: var(--gold-light); display: grid; place-items: center; font-weight: 800; flex: none; }
 .box { background: rgba(46,43,92,.9); border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; border-right: 4px solid #999; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
 .box.j { border-color: var(--emerald); } .box.a { border-color: var(--gold); } .box.t { border-color: var(--plum); }
@@ -271,7 +282,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "b86970";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "e1fda2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -345,11 +356,13 @@ async function keysFromFace(saved) {
   return { enc: unhex(o.enc), mac: unhex(o.mac), salt: saved.salt };
 }
 
+let lastCt = "";
 async function load(pass, useFace) {
   if (!window.crypto || !crypto.subtle) { showLogin("הדפדפן חוסם פענוח בכתובת לא מאובטחת. צריך כתובת https."); return; }
   let env;
   try { env = await (await fetch("snapshot.enc.json", { cache: "no-store" })).json(); }
   catch (e) { showLogin("לא הצלחתי להביא את הנתונים. בדוק חיבור."); return; }
+  if (state && !pass && useFace !== true && env.ct === lastCt) return;   // same snapshot as on screen: leave the screen (and its scroll) alone
   let keys = null;
   try {
     let saved = JSON.parse(localStorage.getItem(KEY) || "null");
@@ -377,7 +390,7 @@ async function load(pass, useFace) {
     showLogin(pass ? "סיסמה שגויה" : useFace === true ? "הסיסמה הוחלפה. צריך להיכנס שוב בסיסמה." : "המפתח השמור לא פתח את הנתונים (" + (e && e.message || "שגיאה") + ")");
     return;
   }
-  faceKeys = keys;
+  faceKeys = keys; lastCt = env.ct;
   const offerFace = false;   // the phone remembers the unlock key by itself now: no Face ID offer (the code stays for a phone that already set it up)
   $("faceSet").hidden = !offerFace;
   $("faceAsk").hidden = !(offerFace && !localStorage.getItem("salesdesk.faceLater"));
@@ -789,15 +802,26 @@ function render() {
   $("stamp").textContent = "Mac: " + state.generatedAt.replace("T", " ").slice(5, 16) + (liveNote ? " · " + liveNote : "") + " · v" + PAGE;
 }
 
-$("month").addEventListener("change", e => { month = e.target.value; render(); });
-$("nav").addEventListener("click", e => { const t = e.target.dataset.tab; if (t) { tab = t; commView = "summary"; render(); scrollTo(0, 0); } });
+function enter() {   // a screen change: the content rises in and the hero figures count up
+  const v = $("view"); v.classList.remove("in"); void v.offsetWidth; v.classList.add("in");
+  v.querySelectorAll(".hero .fig .v").forEach(el => {
+    const m = /[\d,]+(\.\d+)?/.exec(el.textContent); if (!m) return;
+    const to = parseFloat(m[0].replace(/,/g, "")), t0 = performance.now(), pre = el.textContent.slice(0, m.index), post = el.textContent.slice(m.index + m[0].length);
+    if (!(to > 0)) return;
+    const step = now => { const k = Math.max(0, Math.min(1, (now - t0) / 650)), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = pre + Math.round(to * e).toLocaleString("he-IL") + post; if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+$("month").addEventListener("change", e => { month = e.target.value; render(); enter(); });
+$("nav").addEventListener("click", e => { const t = e.target.dataset.tab; if (t) { tab = t; commView = "summary"; render(); enter(); scrollTo(0, 0); } });
 $("view").addEventListener("click", e => {
   const at = sel => e.target.closest(sel);
   let x;
   if ((x = at("[data-cclient]"))) return openClient(x.dataset.cclient, true);
   if ((x = at("[data-cdeal]"))) return dealSheet(x.dataset.cdeal, true);
   if ((x = at("[data-deal]"))) return dealSheet(x.dataset.deal, false);
-  if ((x = at("[data-pick]"))) { month = x.dataset.pick; return render(); }   // the chart only changes the month, like the menu at the top
+  if ((x = at("[data-pick]"))) { month = x.dataset.pick; render(); return enter(); }   // the chart only changes the month, like the menu at the top
   if ((x = at("[data-cmonth]"))) { month = x.dataset.cmonth; commView = "month"; render(); return scrollTo(0, 0); }
   if ((x = at("[data-comm]"))) { commView = x.dataset.comm; render(); return scrollTo(0, 0); }
   if ((x = at("[data-prodsheet]"))) return prodSheet();
@@ -842,7 +866,7 @@ async function selfUpdate() {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (m && PAGE !== "b86970" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
+    if (m && PAGE !== "e1fda2" && m[1] !== PAGE && !sessionStorage.getItem("salesdesk.reloaded." + m[1])) {
       sessionStorage.setItem("salesdesk.reloaded." + m[1], "1");   // one try per version: never a reload loop
       location.replace(location.pathname + "?v=" + m[1]);
     }
