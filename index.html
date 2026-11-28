@@ -237,6 +237,8 @@ nav button.on { background: var(--fill); color: var(--gold-light); }
 html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 input, textarea { -webkit-user-select: text; user-select: text; }
 #pager { position: relative; } #view { will-change: transform; } #peek, #peek2 { position: absolute; left: 0; right: 0; top: 0; visibility: hidden; will-change: transform; pointer-events: none; }
+#peek, #peek2 { max-height: 100vh; overflow: hidden; }   /* only the first screenful is ever seen while it slides in: a small layer to paint and move */
+#peek .cc, #peek2 .cc, #peek .dealrow, #peek2 .dealrow { content-visibility: visible; }   /* not skipped while it slides in: nothing is drawn for the first time in the middle of the move */
 /* loading: grey cards that shimmer until the first screen is ready; pull down from the top to refresh */
 .boot { padding: calc(env(safe-area-inset-top) + 70px) 14px 0; } .boot i { display: block; height: 130px; border-radius: 22px; margin-bottom: 12px; background: linear-gradient(100deg, rgba(255,255,255,.05) 30%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.05) 70%) 0 0 / 200% 100%; animation: shimmer 1.3s linear infinite; }
 .boot i:first-child { height: 230px; }
@@ -306,7 +308,7 @@ const DKEY = "salesdesk.dk";
   history.replaceState(null, "", location.pathname + location.search);   // the key is not left in the address bar or the history
 })();
 const deviceKey = () => { try { return localStorage.getItem(DKEY) || ""; } catch (e) { return ""; } };
-const PAGE = "9361c1";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
+const PAGE = "9306a2";   // the page's own version, filled in when the Mac builds the site: shows which copy the phone runs
 let state = null, month = "", tab = "home", query = "", kind = "הכול", onlyOpen = false;
 
 // ---------- decryption: PBKDF2 -> AES-CBC key + HMAC key; the MAC is checked before anything is decrypted
@@ -1036,7 +1038,7 @@ async function selfUpdate(force) {
   try {
     const t = await (await fetch("index.html?_=" + Date.now(), { cache: "no-store" })).text();
     const m = /const PAGE = "([0-9a-f]{6})"/.exec(t);
-    if (!m || PAGE === "9361c1" || m[1] === PAGE) return false;
+    if (!m || PAGE === "9306a2" || m[1] === PAGE) return false;
     const key = "salesdesk.reloaded." + m[1], tries = +(sessionStorage.getItem(key) || 0);
     if (tries >= 2 && !force) return false;   // two tries per version: never a reload loop
     sessionStorage.setItem(key, String(tries + 1));
@@ -1174,10 +1176,10 @@ settleUI();
     if (!free() || e.target.closest(".chips, .tpick, select, input, textarea") || t.clientX < 24 || t.clientX > innerWidth - 24) return;
     x0 = t.clientX; y0 = t.clientY; dx = 0; mode = ""; lx = x0; vx = 0; t0 = lastT = performance.now(); W = pager.clientWidth || innerWidth; cur = null;
     prepare();   // normally nothing to do: the neighbours were built after the screen was drawn
-    // The move and the end are heard on the touched element itself: if the screen under the finger is redrawn during the gesture, a document listener would never hear the end.
-    const tg = e.target, off = () => { tg.removeEventListener("touchmove", onMove); tg.removeEventListener("touchend", end); tg.removeEventListener("touchcancel", end); };
+    // The END is also heard on the touched element itself: if the screen under the finger is redrawn during the gesture, a document listener would never hear it.
+    const tg = e.target, off = () => { tg.removeEventListener("touchend", end); tg.removeEventListener("touchcancel", end); };
     const end = ev => { off(); if (ev.type === "touchcancel") { dx = 0; vx = 0; } onEnd(); };
-    tg.addEventListener("touchmove", onMove, { passive: false }); tg.addEventListener("touchend", end); tg.addEventListener("touchcancel", end);
+    tg.addEventListener("touchend", end); tg.addEventListener("touchcancel", end);
   }, { passive: true });
   const onMove = e => {
     lastT = performance.now();
@@ -1187,8 +1189,8 @@ settleUI();
     e.preventDefault(); dx = ddx; vx = (t.clientX - lx) / Math.max(1, now - t0); lx = t.clientX; t0 = now;
     const d = dx > 0 ? 1 : -1, to = ensure(d);
     v.style.transition = "none";
-    if (!to) { v.style.transform = `translateX(${dx / 4}px)`; return; }   // the first and last tab resist
-    cur.style.transition = "none"; v.style.transform = `translateX(${dx}px)`; cur.style.transform = `translateX(${(d > 0 ? -W : W) + dx}px)`;
+    if (!to) { v.style.transform = `translate3d(${dx / 4}px,0,0)`; return; }   // the first and last tab resist
+    cur.style.transition = "none"; v.style.transform = `translate3d(${dx}px,0,0)`; cur.style.transform = `translate3d(${(d > 0 ? -W : W) + dx}px,0,0)`;
   };
   const onEnd = () => {
     const v = $("view");
@@ -1198,13 +1200,13 @@ settleUI();
     const ease = "transform .3s cubic-bezier(.2,.85,.25,1)";
     if (!go) {
       v.style.transition = ease; v.style.transform = ""; const el = cur;
-      if (el) { el.style.transition = ease; el.style.transform = `translateX(${d > 0 ? -W : W}px)`; }
+      if (el) { el.style.transition = ease; el.style.transform = `translate3d(${d > 0 ? -W : W}px,0,0)`; }
       setTimeout(() => { v.style.transition = ""; if (el) hide(el); }, 320); cur = null;
       return;
     }
     busy = true; if (window.noteAction) noteAction("מעבר לשונית");
     const nu = cur; cur = null;
-    v.style.transition = nu.style.transition = ease; v.style.transform = `translateX(${d > 0 ? W : -W}px)`; nu.style.transform = "translateX(0)";
+    v.style.transition = nu.style.transition = ease; v.style.transform = `translate3d(${d > 0 ? W : -W}px,0,0)`; nu.style.transform = "translate3d(0,0,0)";
     tab = to; commView = "summary"; header();   // the title, the month menu and the bar already say where it is going
     setTimeout(() => {
       // The finished neighbour BECOMES the screen (the two swap places): nothing is built, nothing is copied, nothing jumps. The old screen becomes the spare.
@@ -1218,6 +1220,9 @@ settleUI();
       growRings(); enter("month"); busy = false; prepareSoon();
     }, 310);
   };
+  // The move is heard by ONE listener that exists from the start (not added while the finger is already down): the phone knows the swipe area in advance and does not wait for the page on every move.
+  document.addEventListener("touchmove", onMove, { passive: false });
+  document.addEventListener("touchend", () => onEnd(), { passive: true }); document.addEventListener("touchcancel", () => { dx = 0; vx = 0; onEnd(); }, { passive: true });
   setInterval(() => { if (x0 !== null && mode === "h" && performance.now() - lastT > 3000) { x0 = null; mode = ""; settleUI(); } }, 1000);   // a gesture that never ended heals itself
 })();
 (() => {   // a long pull down at the very top refreshes (a sideways move or a short pull never shows or does anything)
